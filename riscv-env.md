@@ -1,10 +1,11 @@
-.bashrc
+# RISC-V開発環境の準備
+## .bashrc
 ```
 export PATH="$PATH":/opt/riscv32/bin
 export RISCV=/opt/riscv32
 ```
 
-準備
+## 準備
 ```
 sudo mkdir /opt/riscv32
 sudo chmod 777 /opt/riscv32
@@ -14,13 +15,14 @@ cd riscv-gnu-toolchain/
 sudo apt install device-tree-compiler
 ```
 
-GCC
+## GCC
 ```
 ./configure --prefix=/opt/riscv32 --with-arch=rv32i --with-abi=ilp32
 make
 ```
 
-spike
+## 命令セットシミュレータ
+### spike
 ```
 git submodule update spike
 cd spike
@@ -31,7 +33,7 @@ make
 make install
 ```
 
-pk
+### pk
 ```
 git submodule update pk
 cd pk
@@ -40,7 +42,9 @@ make
 make install
 ```
 
-hello.c
+
+## test
+### hello.c
 ```
 #include <stdio.h>
 
@@ -49,8 +53,6 @@ main(){
 }
 ```
 
-
-test
 ```
 riscv32-unknown-elf-gcc -o hello hello.c
 spike --isa=rv32i /opt/riscv32/riscv32-unknown-elf/bin/pk hello
