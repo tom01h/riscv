@@ -41,7 +41,7 @@ VERILATOR_FLAGS += -Wall
 VERILATOR_FLAGS += --trace --timescale 1ns/1ns
 
 # Input files for Verilator
-VERILATOR_INPUT = -f input.vc top.v trace.sv sim_main.cpp
+VERILATOR_INPUT = -f input.vc top.v ../rtl/instruction_pkg.sv trace.sv sim_main.cpp
 
 ######################################################################
 default: all

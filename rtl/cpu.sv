@@ -33,4 +33,12 @@ module cpu
         .inst_i   (inst_i)
         
     );
+
+    execution execution
+    (
+        .clk      (clk),
+        .reset    (reset_p),
+        .inst_v_i (inst_v_i),
+        .inst_i   (inst_i)
+    );
 endmodule

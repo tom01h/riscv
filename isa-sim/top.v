@@ -14,10 +14,13 @@ module top
     );
 
     trace trace (
-        .clk   (clk),
-        .valid (cpu.inst_v_i),
-        .pc    (cpu.pc_i),
-        .inst  (cpu.inst_i)
+        .clk     (clk),
+        .valid   (cpu.inst_v_i),
+        .pc      (cpu.pc_i),
+        .inst    (cpu.inst_i),
+        .rdv     (cpu.execution.rd_v),
+        .rd_x    (cpu.execution.rd),
+        .rd_data (cpu.execution.rd_data)
     );
 
     initial begin
@@ -25,7 +28,6 @@ module top
             $dumpfile("dump.vcd");
             $dumpvars();
         end
-        $display("[%0t] Model running...\n", $time);
         $value$plusargs("reset_pc=%x",reset_pc);
         $display("reset_pc=0x%08x", reset_pc);
         $value$plusargs("pass_pc=%x",pass_pc);
@@ -36,6 +38,7 @@ module top
         cpu.instruction.reset_pc = reset_pc;
         $display("");
 
+        cpu.execution.register[0] = 32'h0;
         $readmemh("inst.hex", cpu.itcm.imem);
     end
 

@@ -1,18 +1,17 @@
+/* verilator lint_off UNUSEDSIGNAL */
 module trace
+    import instruction_pkg::*;
 (
     input clk,
     input valid,
     input [31:0] pc,
-    input [31:0] inst
-);
-    parameter OPIMM = 5'b001_00;
-    parameter ADDI  = 3'b000;
-    //parameter SLTI  = 3'b010;
-    //parameter SLTIU = 3'b011;
-    //parameter XORI  = 3'b100;
-    //parameter ORI   = 3'b110;
-    //parameter ANDI  = 3'b111;
+    input [31:0] inst,
+    input rdv,
+    input [4:0] rd_x,
+    input [31:0] rd_data
 
+);
+    string space = "                         ";
     string asm;
     string reg_s1;
     string reg_d;
@@ -45,11 +44,20 @@ module trace
                 asm="Unimplemented";
             end    
         endcase
+        asm = {asm, space};
     end
 
     always_ff @ (posedge clk) begin
         if (valid) begin
-            $display("0x%08x (0x%08x)  %s", pc, inst, asm);
+            $write("0x%08x (0x%08x)  %s/ ", pc, inst, asm.substr(0,24));
+        end else if(rdv) begin
+            $write("                                                  / ");
+        end
+        if (rdv) begin
+            $write("x%2d <= 0x%08x", rd_x, rd_data);
+        end    
+        if (valid | rdv) begin
+            $display("");
         end
     end
 
