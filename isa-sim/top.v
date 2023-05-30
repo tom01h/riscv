@@ -9,18 +9,21 @@ module top
     int fail_pc;
 
     cpu cpu (
-        .clk   (clk),
-        .reset (reset)
+        .clk     (clk),
+        .reset   (reset)
     );
 
     trace trace (
         .clk     (clk),
+        .reset   (reset),
         .valid   (cpu.inst_v_i),
         .pc      (cpu.pc_i),
         .inst    (cpu.inst_i),
         .rdv     (cpu.execution.rd_v),
         .rd_x    (cpu.execution.rd),
-        .rd_data (cpu.execution.rd_data)
+        .rd_data (cpu.execution.rd_data),
+        .pcv     (cpu.execution.pc_v_x),
+        .pc_x    (cpu.pc_x)
     );
 
     initial begin

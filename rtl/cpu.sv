@@ -13,6 +13,9 @@ module cpu
     logic inst_v_i;
     logic [31:0] pc_p;
     logic [31:0] pc_i;
+    logic [31:0] pc_x;
+
+    logic pc_v_x;
 
     instruction instruction
     (
@@ -20,8 +23,9 @@ module cpu
         .reset    (reset_p),
         .inst_v_i (inst_v_i),
         .pc_p     (pc_p),
-        .pc_i     (pc_i)
-        
+        .pc_i     (pc_i),
+        .pc_v_x   (pc_v_x),
+        .pc_x     (pc_x)
     );
 
     logic [31:0] inst_i;
@@ -38,7 +42,10 @@ module cpu
     (
         .clk      (clk),
         .reset    (reset_p),
+        .pc_i     (pc_i),
         .inst_v_i (inst_v_i),
-        .inst_i   (inst_i)
+        .inst_i   (inst_i),
+        .pc_v_x   (pc_v_x),
+        .pc_x     (pc_x)
     );
 endmodule

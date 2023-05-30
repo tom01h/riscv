@@ -28,6 +28,12 @@ int main(int argc, char** argv) {
         contextp->timeInc(50);
     }
 
+    for(int i = 0; i < 10; i++){
+        top->clk = !top->clk;
+        top->eval();
+        contextp->timeInc(50);
+    }
+
     // Final model cleanup
     top->final();
 
