@@ -38,17 +38,17 @@ module execution
     wire signed [12:0] b_imm = {inst_x[31],inst_x[7],inst_x[30:25],inst_x[11:8],1'b0};
     wire signed [31:0] u_imm = {inst_x[31:12],12'b0};
 
-    logic [31:0] register [0:31];
-    logic [31:0] rs1_rdata;
-    logic [31:0] rs1_data;
+    logic signed [31:0] register [0:31];
+    logic signed [31:0] rs1_rdata;
+    logic signed [31:0] rs1_data;
     logic rs1_bypass;
-    logic [31:0] rs2_rdata;
-    logic [31:0] rs2_data;
+    logic signed [31:0] rs2_rdata;
+    logic signed [31:0] rs2_data;
     logic rs2_bypass;
     logic rd_v;
     wire  rd_v_x = (rd != 0);
-    logic [31:0] rd_data;
-    logic [31:0] rd_data_m;
+    logic signed [31:0] rd_data;
+    logic signed [31:0] rd_data_m;
     
     always_ff @ (posedge clk) begin
         if(rd_v) register[rd] <= rd_data;
@@ -69,27 +69,25 @@ module execution
     logic signed [31:0] imm;
     logic signed [31:0] alu_a;
     logic signed [31:0] alu_b;
-    logic alu_c;
+    logic alu_m;
     logic signed [31:0] alu_o;
     logic [4:0] shamt;
     logic sha;
-    logic signed [31:0] shift_i;
     logic signed [31:0] shift_l;
     logic signed [31:0] shift_r;
     logic eq_o;
-    assign alu_o = alu_a + alu_b + alu_c;
+    assign alu_o = alu_a + ((alu_m) ? ~alu_b : alu_b) + alu_m;
     assign eq_o = (rs1_data == rs2_data);
-    assign shift_l = shift_i << shamt;
-    assign shift_r = (sha) ? (shift_i >>> shamt) : (shift_i >> shamt);
+    assign shamt = alu_b[4:0];
+    assign shift_l = rs1_data << shamt;
+    assign shift_r = (sha) ? (rs1_data >>> shamt) : (rs1_data >> shamt);
 
     always_comb begin
         imm = 32'hx;
         alu_a = 32'hx;
         alu_b = 32'hx;
-        alu_c = 1'hx;
-        shamt = 4'hx;
+        alu_m = 1'hx;
         sha = 1'bx;
-        shift_i = 32'hx;
         rd_v = 1'b0;
         rd_data = 32'hx;
         pc_v_x = 1'b0;
@@ -100,90 +98,59 @@ module execution
                     case(funct3)
                         ADD_SUB:begin
                             case(funct7)
-                                ADD_7:begin
-                                    alu_a = rs1_data;
-                                    alu_b = rs2_data;
-                                    alu_c = 1'b0;
-                                    rd_v = rd_v_x;
-                                    rd_data = alu_o;
-                                end
-                                SUB_7:begin
-                                    alu_a = rs1_data;
-                                    alu_b = ~rs2_data;
-                                    alu_c = 1'b1;
-                                    rd_v = rd_v_x;
-                                    rd_data = alu_o;
-                                end    
+                                ADD_7: alu_m = 1'b0;
+                                SUB_7: alu_m = 1'b1;
                                 default: ;
                             endcase
+                            rd_data = alu_o;
                         end
                         default: ;
                     endcase
+                    alu_a = rs1_data;
+                    alu_b = rs2_data;
+                    rd_v = rd_v_x;
                 end
                 OPIMM:begin
                     case(funct3)
                         ADDI:begin
-                            imm = 32'(signed'(i_imm));
-                            alu_a = rs1_data;
-                            alu_b = imm;
-                            alu_c = 1'b0;
-                            rd_v = rd_v_x;
+                            alu_m = 1'b0;
                             rd_data = alu_o;
                         end
                         SLLI:begin
-                            shamt = i_imm[4:0];
-                            shift_i = rs1_data;
-                            rd_v = rd_v_x;
                             rd_data = shift_l;
                         end    
                         SRLI_SRAI:begin
                             case(funct7)
-                                SRLI_7:begin
-                                    shamt = i_imm[4:0];
-                                    sha = 1'b0;
-                                    shift_i = rs1_data;
-                                    rd_v = rd_v_x;
-                                    rd_data = shift_r;
-                                end
-                                SRAI_7:begin
-                                    shamt = i_imm[4:0];
-                                    sha = 1'b1;
-                                    shift_i = rs1_data;
-                                    rd_v = rd_v_x;
-                                    rd_data = shift_r;
-                                end
+                                SRLI_7: sha = 1'b0;
+                                SRAI_7: sha = 1'b1;
                                 default: ;
                             endcase
+                            rd_data = shift_r;
                         end
                         default: ;
                     endcase
+                    imm = 32'(signed'(i_imm));
+                    alu_a = rs1_data;
+                    alu_b = imm;
+                    rd_v = rd_v_x;
                 end
                 BRANCH:begin
                     case(funct3)
-                        BEQ:begin
-                            imm = 32'(signed'(b_imm));
-                            alu_a = pc_d;
-                            alu_b = imm;
-                            alu_c = 1'b0;
-                            pc_v_x = eq_o;
-                            pc_x = alu_o;
-                        end
-                        BNE:begin
-                            imm = 32'(signed'(b_imm));
-                            alu_a = pc_d;
-                            alu_b = imm;
-                            alu_c = 1'b0;
-                            pc_v_x = !eq_o;
-                            pc_x = alu_o;
-                        end
+                        BEQ: pc_v_x = eq_o;
+                        BNE: pc_v_x = !eq_o;
                         default: ;
                     endcase
+                    imm = 32'(signed'(b_imm));
+                    alu_a = pc_d;
+                    alu_b = imm;
+                    alu_m = 1'b0;
+                    pc_x = alu_o;
                 end
                 LUI:begin
                     imm = u_imm;
                     alu_a = 0;
                     alu_b = imm;
-                    alu_c = 1'b0;
+                    alu_m = 1'b0;
                     rd_v = rd_v_x;
                     rd_data = alu_o;
                 end
