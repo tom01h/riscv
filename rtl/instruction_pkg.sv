@@ -16,12 +16,17 @@ parameter SUB_7 = 7'b0100000;
 //parameter SRA_7 = 7'b0100000;
 
 parameter OPIMM = 5'b00_100;
-parameter ADDI  = 3'b000;
-//parameter SLTI  = 3'b010;
-//parameter SLTIU = 3'b011;
-//parameter XORI  = 3'b100;
-//parameter ORI   = 3'b110;
-//parameter ANDI  = 3'b111;
+parameter ADDI      = 3'b000;
+//parameter SLTI      = 3'b010;
+//parameter SLTIU     = 3'b011;
+//parameter XORI      = 3'b100;
+//parameter ORI       = 3'b110;
+//parameter ANDI      = 3'b111;
+parameter SLLI      = 3'b001;
+parameter SRLI_SRAI = 3'b101;
+parameter SRLI_7 = 7'b0000000;
+parameter SRAI_7 = 7'b0100000;
+
 
 parameter BRANCH = 5'b11_000;
 parameter BEQ  = 3'b000;

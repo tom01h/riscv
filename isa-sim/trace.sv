@@ -63,6 +63,25 @@ module trace
                         else if(i_imm==0) asm={"mv      x", reg_d, ", x", reg_s1};
                         else              asm={"addi    x", reg_d, ", x", reg_s1, ", ", immediate};
                     end
+                    SLLI:begin
+                        immediate.itoa(i_imm[4:0]);
+                        asm={"slli    x", reg_d, ", x", reg_s1, ", ", immediate};
+                    end
+                    SRLI_SRAI:begin
+                        case(funct7)
+                            SRLI_7:begin
+                                immediate.itoa(i_imm[4:0]);
+                                asm={"srli    x", reg_d, ", x", reg_s1, ", ", immediate};
+                            end
+                            SRAI_7:begin
+                                immediate.itoa(i_imm[4:0]);
+                                asm={"srai    x", reg_d, ", x", reg_s1, ", ", immediate};
+                            end
+                            default:begin
+                                asm="Unimplemented";
+                            end
+                        endcase                        
+                    end    
                     default:begin
                         asm="Unimplemented";
                     end

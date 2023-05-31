@@ -71,15 +71,25 @@ module execution
     logic signed [31:0] alu_b;
     logic alu_c;
     logic signed [31:0] alu_o;
+    logic [4:0] shamt;
+    logic sha;
+    logic signed [31:0] shift_i;
+    logic signed [31:0] shift_l;
+    logic signed [31:0] shift_r;
     logic eq_o;
     assign alu_o = alu_a + alu_b + alu_c;
     assign eq_o = (rs1_data == rs2_data);
+    assign shift_l = shift_i << shamt;
+    assign shift_r = (sha) ? (shift_i >>> shamt) : (shift_i >> shamt);
 
     always_comb begin
         imm = 32'hx;
         alu_a = 32'hx;
         alu_b = 32'hx;
         alu_c = 1'hx;
+        shamt = 4'hx;
+        sha = 1'bx;
+        shift_i = 32'hx;
         rd_v = 1'b0;
         rd_data = 32'hx;
         pc_v_x = 1'b0;
@@ -119,6 +129,31 @@ module execution
                             alu_c = 1'b0;
                             rd_v = rd_v_x;
                             rd_data = alu_o;
+                        end
+                        SLLI:begin
+                            shamt = i_imm[4:0];
+                            shift_i = rs1_data;
+                            rd_v = rd_v_x;
+                            rd_data = shift_l;
+                        end    
+                        SRLI_SRAI:begin
+                            case(funct7)
+                                SRLI_7:begin
+                                    shamt = i_imm[4:0];
+                                    sha = 1'b0;
+                                    shift_i = rs1_data;
+                                    rd_v = rd_v_x;
+                                    rd_data = shift_r;
+                                end
+                                SRAI_7:begin
+                                    shamt = i_imm[4:0];
+                                    sha = 1'b1;
+                                    shift_i = rs1_data;
+                                    rd_v = rd_v_x;
+                                    rd_data = shift_r;
+                                end
+                                default: ;
+                            endcase
                         end
                         default: ;
                     endcase
