@@ -35,14 +35,8 @@ module execution
     wire [4:0] rd = inst_x[11:7];
     wire signed [11:0] i_imm = inst_x[31:20];
     wire signed [12:0] b_imm = {inst_x[31],inst_x[7],inst_x[30:25],inst_x[11:8],1'b0};
+    wire signed [31:0] u_imm = {inst_x[31:12],12'b0};
 
-    logic signed [31:0] imm;
-    logic signed [31:0] alu_a;
-    logic signed [31:0] alu_b;
-    logic alu_c;
-    logic signed [31:0] alu_o;
-    wire eq_o = (rs1_data == rs2_data);
-    
     logic [31:0] register [0:31];
     logic [31:0] rs1_rdata;
     logic [31:0] rs1_data;
@@ -69,8 +63,16 @@ module execution
         rs2_bypass <= (rs2 == rd) & rd_v;
         if (rd_v) rd_data_m <= rd_data;
     end
+
     /* verilator lint_off WIDTHEXPAND */
+    logic signed [31:0] imm;
+    logic signed [31:0] alu_a;
+    logic signed [31:0] alu_b;
+    logic alu_c;
+    logic signed [31:0] alu_o;
+    logic eq_o;
     assign alu_o = alu_a + alu_b + alu_c;
+    assign eq_o = (rs1_data == rs2_data);
 
     always_comb begin
         imm = 32'hx;
@@ -108,6 +110,14 @@ module execution
                         end
                         default: ;
                     endcase
+                end
+                LUI:begin
+                    imm = u_imm;
+                    alu_a = 0;
+                    alu_b = imm;
+                    alu_c = 1'b0;
+                    rd_v = rd_v_x;
+                    rd_data = alu_o;
                 end
                 default: ;
             endcase

@@ -26,6 +26,7 @@ module trace
     wire [4:0] rd = inst[11:7];
     wire signed [11:0] i_imm = inst[31:20];
     wire signed [12:0] b_imm = {inst[31],inst[7],inst[30:25],inst[11:8],1'b0};
+    wire signed [31:0] u_imm = {inst[31:12],12'b0};
 
     always_comb begin
         reg_s1.itoa(rs1);
@@ -56,6 +57,10 @@ module trace
                         asm="Unimplemented";
                     end
                 endcase
+            end
+            LUI:begin
+                immediate.itoa(u_imm);
+                asm={"lui     x", reg_d, ", ", immediate};
             end
             default:begin
                 asm="Unimplemented";

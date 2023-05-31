@@ -46,8 +46,12 @@ module top
     end
 
     always @ (posedge clk) begin
-        if (cpu.pc_i==fail_pc) begin
+        if ((cpu.pc_i==fail_pc) & cpu.inst_v_i) begin
             $display("fail");
+            $finish;
+        end
+        if ((cpu.pc_i==pass_pc) & cpu.inst_v_i) begin
+            $display("pass");
             $finish;
         end
     end
