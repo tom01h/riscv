@@ -63,7 +63,7 @@ Hello
 (spike -l --log=log_file --isa=rv32i /opt/riscv32/riscv32-unknown-elf/bin/pk hello)
 ```
 
-riscv-tests
+### riscv-tests
 ```
 git clone https://github.com/riscv-software-src/riscv-tests
 ./configure --prefix=$RISCV/target --with-xlen=32
