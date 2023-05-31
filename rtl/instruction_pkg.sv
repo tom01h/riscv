@@ -24,7 +24,7 @@ parameter ADDI  = 3'b000;
 //parameter ANDI  = 3'b111;
 
 parameter BRANCH = 5'b11_000;
-//parameter BEQ  = 3'b000;
+parameter BEQ  = 3'b000;
 parameter BNE  = 3'b001;
 //parameter BLT  = 3'b100;
 //parameter BGE  = 3'b101;

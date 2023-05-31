@@ -70,6 +70,10 @@ module trace
             end
             BRANCH:begin
                 case(funct3)
+                    BEQ:begin
+                        immediate.itoa(b_imm);
+                        asm={"beq     x", reg_d, ", x", reg_s1, ", pc + ", immediate};
+                    end
                     BNE:begin
                         immediate.itoa(b_imm);
                         asm={"bne     x", reg_d, ", x", reg_s1, ", pc + ", immediate};

@@ -125,6 +125,14 @@ module execution
                 end
                 BRANCH:begin
                     case(funct3)
+                        BEQ:begin
+                            imm = 32'(signed'(b_imm));
+                            alu_a = pc_d;
+                            alu_b = imm;
+                            alu_c = 1'b0;
+                            pc_v_x = eq_o;
+                            pc_x = alu_o;
+                        end
                         BNE:begin
                             imm = 32'(signed'(b_imm));
                             alu_a = pc_d;
