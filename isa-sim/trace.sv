@@ -20,6 +20,7 @@ module trace
     string reg_d;
     string immediate;
     wire [4:0] opcode = inst[6:2];
+    wire [6:0] funct7 = inst[31:25];
     wire [2:0] funct3 = inst[14:12];
     wire [4:0] rs1 = inst[19:15];
     wire [4:0] rs2 = inst[24:20];
@@ -33,6 +34,26 @@ module trace
         reg_s2.itoa(rs2);
         reg_d.itoa(rd);
         case(opcode)
+            OP:begin
+                case(funct3)
+                    ADD_SUB:begin
+                        case(funct7)
+                            ADD_7:begin
+                                asm={"add     x", reg_d, ", x", reg_s1, ", x ", reg_s2};
+                            end
+                            SUB_7:begin
+                                asm={"sub     x", reg_d, ", x", reg_s1, ", x ", reg_s2};
+                            end    
+                            default:begin
+                                asm="Unimplemented";
+                            end
+                        endcase
+                    end
+                    default:begin
+                        asm="Unimplemented";
+                    end
+                endcase
+            end
             OPIMM:begin
                 case(funct3)
                     ADDI:begin
