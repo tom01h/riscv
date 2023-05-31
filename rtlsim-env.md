@@ -45,3 +45,11 @@ Spikeを流すなら
 isa-sim/にて
 spike -l --log=log_file --isa=rv32i ../isa/rv32ui-p-addi
 ```
+
+### ↑をまとめて実行する
+`isa-sim/` と同じ階層の `isa/` に `risv-tests/isa/` の結果を準備して
+```
+isa-sim/にて
+./run.sh テスト名の羅列
+(例えば  ./run.sh rv32ui-p-add rv32ui-p-addi)
+```
