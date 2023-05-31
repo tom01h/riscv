@@ -104,6 +104,17 @@ module execution
                             endcase
                             rd_data = alu_o;
                         end
+                        SLL:begin
+                            rd_data = shift_l;
+                        end
+                        SRL_SRA:begin
+                            case(funct7)
+                                SRL_7: sha = 1'b0;
+                                SRA_7: sha = 1'b1;
+                                default: ;
+                            endcase                        
+                            rd_data = shift_r;
+                        end    
                         default: ;
                     endcase
                     alu_a = rs1_data;

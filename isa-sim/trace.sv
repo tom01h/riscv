@@ -39,16 +39,32 @@ module trace
                     ADD_SUB:begin
                         case(funct7)
                             ADD_7:begin
-                                asm={"add     x", reg_d, ", x", reg_s1, ", x ", reg_s2};
+                                asm={"add     x", reg_d, ", x", reg_s1, ", x", reg_s2};
                             end
                             SUB_7:begin
-                                asm={"sub     x", reg_d, ", x", reg_s1, ", x ", reg_s2};
+                                asm={"sub     x", reg_d, ", x", reg_s1, ", x", reg_s2};
                             end    
                             default:begin
                                 asm="Unimplemented";
                             end
                         endcase
                     end
+                    SLL:begin
+                        asm={"sll     x", reg_d, ", x", reg_s1, ", x", reg_s2};
+                    end
+                    SRL_SRA:begin
+                        case(funct7)
+                            SRL_7:begin
+                                asm={"srl     x", reg_d, ", x", reg_s1, ", x", reg_s2};
+                            end
+                            SRA_7:begin
+                                asm={"sra     x", reg_d, ", x", reg_s1, ", x", reg_s2};
+                            end
+                            default:begin
+                                asm="Unimplemented";
+                            end
+                        endcase                        
+                    end    
                     default:begin
                         asm="Unimplemented";
                     end
