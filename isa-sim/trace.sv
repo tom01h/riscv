@@ -11,7 +11,15 @@ module trace
     input [4:0] rd_x,
     input [31:0] rd_data,
     input pcv,
-    input [31:0] pc_x
+    input [31:0] pc_x,
+    input logic inst_v_i,
+    input logic inst_v_x,
+    input logic inst_v_m,
+    input logic inst_v_r,
+    input int ci,
+    input int cx,
+    input int cm,
+    input int cr
 );
     string space = "                                ";
     string asm;
@@ -145,6 +153,35 @@ module trace
             if (valid | rdv | pcv) begin
                 $display("");
             end
+        end
+    end
+
+    int konata;
+
+    initial begin
+        konata = $fopen("konata.log", "w");
+        $fdisplay(konata, "Kanata\t0004");
+        $fdisplay(konata, "C=\t-1");
+    end
+
+    always_ff @ (negedge clk) begin
+        if (!reset) begin
+            if(inst_v_i)begin
+                $fdisplay(konata, "I\t%d\t%d\t0", ci, ci);
+                $fdisplay(konata, "S\t%d\t0\tI", ci);
+                $fdisplay(konata, "L\t%d\t0\t(%08x) %s", ci, pc, asm.substr(0,30));
+                $fdisplay(konata, "L\t%d\t1\tOP = %08x\\n", ci, inst);
+            end    
+            if(inst_v_x)begin
+                $fdisplay(konata, "S\t%d\t0\tX", cx);
+            end    
+            if (rdv) begin
+                $fdisplay(konata, "L\t%d\t1\tx%2d <= 0x%08x\\n", cx, rd_x, rd_data);
+            end    
+            if(inst_v_r)begin
+                $fdisplay(konata, "R\t%d\t%d\t0", cr, cr);
+            end    
+            $fdisplay(konata, "C\t1");
         end
     end
 

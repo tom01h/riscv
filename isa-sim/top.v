@@ -13,17 +13,50 @@ module top
         .reset   (reset)
     );
 
+    wire inst_v_i = cpu.inst_v_i;
+    wire inst_v_x = cpu.execution.inst_v_x;
+    reg  inst_v_m;
+    reg  inst_v_r;
+
+    always @ (negedge clk) begin
+        inst_v_m <= inst_v_x;
+        //inst_v_r <= inst_v_m;
+        inst_v_r <= inst_v_x;
+    end    
+
+    int ci = 0;
+    int cx = 0;
+    int cm = 0;
+    int cr = 0;
+
+    always @ (negedge clk) begin
+        if(!reset)begin
+            if (inst_v_i) ci <= ci + 1;
+            if (inst_v_x) cx <= cx + 1;
+            if (inst_v_m) cm <= cm + 1;
+            if (inst_v_r) cr <= cr + 1;
+        end
+    end
+    
     trace trace (
-        .clk     (clk),
-        .reset   (reset),
-        .valid   (cpu.inst_v_i),
-        .pc      (cpu.pc_i),
-        .inst    (cpu.inst_i),
-        .rdv     (cpu.execution.rd_v),
-        .rd_x    (cpu.execution.rd),
-        .rd_data (cpu.execution.rd_data),
-        .pcv     (cpu.execution.pc_v_x),
-        .pc_x    (cpu.pc_x)
+        .clk      (clk),
+        .reset    (reset),
+        .valid    (cpu.inst_v_i),
+        .pc       (cpu.pc_i),
+        .inst     (cpu.inst_i),
+        .rdv      (cpu.execution.rd_v),
+        .rd_x     (cpu.execution.rd),
+        .rd_data  (cpu.execution.rd_data),
+        .pcv      (cpu.execution.pc_v_x),
+        .pc_x     (cpu.pc_x),
+        .inst_v_i (inst_v_i),
+        .inst_v_x (inst_v_x),
+        .inst_v_m (inst_v_m),
+        .inst_v_r (inst_v_r),
+        .ci       (ci),
+        .cx       (cx),
+        .cm       (cm),
+        .cr       (cr)
     );
 
     initial begin
