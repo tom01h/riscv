@@ -143,10 +143,21 @@ module execution
                     rd_v = rd_v_x;
                 end
                 OPIMM:begin
+                    imm = 32'(signed'(i_imm));
                     case(funct3)
                         ADDI:begin
                             alu_m = 1'b0;
                             rd_data = alu_o;
+                        end
+                        SLTI:begin
+                            cmp_a = rs1_data; // sign ext
+                            cmp_b = imm;      // sign ext
+                            rd_data = {31'h0, lt_o};
+                        end
+                        SLTIU:begin
+                            cmp_a = {1'b0, rs1_data}; // zero ext
+                            cmp_b = {1'b0,      imm}; // zero ext
+                            rd_data = {31'h0, lt_o};
                         end
                         SLLI:begin
                             rd_data = shift_l;
@@ -161,7 +172,6 @@ module execution
                         end
                         default: ;
                     endcase
-                    imm = 32'(signed'(i_imm));
                     alu_a = rs1_data;
                     alu_b = imm;
                     rd_v = rd_v_x;

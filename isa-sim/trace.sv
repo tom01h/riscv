@@ -93,6 +93,14 @@ module trace
                         else if(i_imm==0) asm={"mv      x", reg_d, ", x", reg_s1};
                         else              asm={"addi    x", reg_d, ", x", reg_s1, ", ", immediate};
                     end
+                    SLTI:begin
+                        immediate.itoa(i_imm);
+                        asm={"slti    x", reg_d, ", x", reg_s1, ", ", immediate};
+                    end
+                    SLTIU:begin
+                        immediate.itoa(unsigned'(i_imm));
+                        asm={"sltiu   x", reg_d, ", x", reg_s1, ", ", immediate};
+                    end
                     SLLI:begin
                         immediate.itoa(i_imm[4:0]);
                         asm={"slli    x", reg_d, ", x", reg_s1, ", ", immediate};

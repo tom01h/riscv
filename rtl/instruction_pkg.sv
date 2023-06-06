@@ -17,8 +17,8 @@ parameter SRA_7 = 7'b0100000;
 
 parameter OPIMM = 5'b00_100;
 parameter ADDI      = 3'b000;
-//parameter SLTI      = 3'b010;
-//parameter SLTIU     = 3'b011;
+parameter SLTI      = 3'b010;
+parameter SLTIU     = 3'b011;
 //parameter XORI      = 3'b100;
 //parameter ORI       = 3'b110;
 //parameter ANDI      = 3'b111;
