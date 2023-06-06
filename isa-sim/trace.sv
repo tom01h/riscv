@@ -135,6 +135,22 @@ module trace
                         immediate.itoa(b_imm);
                         asm={"bne     x", reg_d, ", x", reg_s1, ", pc + ", immediate};
                     end
+                    BLT:begin
+                        immediate.itoa(b_imm);
+                        asm={"blt     x", reg_d, ", x", reg_s1, ", pc + ", immediate};
+                    end
+                    BGE:begin
+                        immediate.itoa(b_imm);
+                        asm={"bge     x", reg_d, ", x", reg_s1, ", pc + ", immediate};
+                    end
+                    BLTU:begin
+                        immediate.itoa(b_imm);
+                        asm={"bltu    x", reg_d, ", x", reg_s1, ", pc + ", immediate};
+                    end
+                    BGEU:begin
+                        immediate.itoa(b_imm);
+                        asm={"bgeu    x", reg_d, ", x", reg_s1, ", pc + ", immediate};
+                    end
                     default:begin
                         asm="Unimplemented";
                     end

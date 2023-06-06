@@ -31,10 +31,10 @@ parameter SRAI_7 = 7'b0100000;
 parameter BRANCH = 5'b11_000;
 parameter BEQ  = 3'b000;
 parameter BNE  = 3'b001;
-//parameter BLT  = 3'b100;
-//parameter BGE  = 3'b101;
-//parameter BLTU = 3'b110;
-//parameter BGEU = 3'b111;
+parameter BLT  = 3'b100;
+parameter BGE  = 3'b101;
+parameter BLTU = 3'b110;
+parameter BGEU = 3'b111;
 
 parameter LUI = 5'b01_101;
 endpackage : instruction_pkg

@@ -188,6 +188,26 @@ module execution
                             cmp_a = {1'bx, rs1_data};
                             cmp_b = {1'bx, rs2_data};
                         end
+                        BLT: begin
+                            pc_v_x = lt_o;
+                            cmp_a = rs1_data; // sign ext
+                            cmp_b = rs2_data; // sign ext
+                        end
+                        BGE: begin
+                            pc_v_x = !lt_o;
+                            cmp_a = rs1_data; // sign ext
+                            cmp_b = rs2_data; // sign ext
+                        end
+                        BLTU: begin
+                            pc_v_x = lt_o;
+                            cmp_a = {1'b0, rs1_data}; // zero ext
+                            cmp_b = {1'b0, rs2_data}; // zero ext
+                        end
+                        BGEU: begin
+                            pc_v_x = !lt_o;
+                            cmp_a = {1'b0, rs1_data}; // zero ext
+                            cmp_b = {1'b0, rs2_data}; // zero ext
+                        end
                         default: ;
                     endcase
                     imm = 32'(signed'(b_imm));
