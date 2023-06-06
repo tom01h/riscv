@@ -37,6 +37,7 @@ module execution
     wire signed [11:0] i_imm = inst_x[31:20];
     wire signed [12:0] b_imm = {inst_x[31],inst_x[7],inst_x[30:25],inst_x[11:8],1'b0};
     wire signed [31:0] u_imm = {inst_x[31:12],12'b0};
+    wire signed [20:0] j_imm = {inst_x[31],inst_x[19:12],inst_x[20],inst_x[30:21],1'b0};
 
     logic signed [31:0] register [0:31];
     logic signed [31:0] rs1_rdata;
@@ -92,7 +93,8 @@ module execution
     assign eq_o = (cmp_a == cmp_b);
     assign lt_o = alu_l[33];
 
-    assign pc_x = pc_d + b_imm;
+    logic signed [31:0] br_pc;
+    assign br_pc = pc_d + b_imm;
 
     always_comb begin
         alu_a = 33'hx;
@@ -104,6 +106,7 @@ module execution
         rd_v = 1'b0;
         rd_data = 32'hx;
         pc_v_x = 1'b0;
+        pc_x = 32'hx;
         if(inst_v_x) begin
             case(opcode)
                 OP:begin
@@ -179,6 +182,7 @@ module execution
                 BRANCH:begin
                     alu_a = rs1_data;
                     alu_b = rs2_data;
+                    pc_x = br_pc;
                     case(funct3)
                         BEQ: begin
                             pc_v_x = eq_o;
@@ -213,12 +217,37 @@ module execution
                         default: ;
                     endcase
                 end
+                AUIPC:begin
+                    alu_a = pc_d;
+                    alu_b = u_imm;
+                    alu_m = 1'b0;
+                    rd_v = rd_v_x;
+                    rd_data = alu_o;
+                end
                 LUI:begin
                     alu_a = 0;
                     alu_b = u_imm;
                     alu_m = 1'b0;
                     rd_v = rd_v_x;
                     rd_data = alu_o;
+                end
+                JALR:begin
+                    alu_a = rs1_data;
+                    alu_b = i_imm;
+                    alu_m = 1'b0;
+                    rd_v = rd_v_x;
+                    rd_data = pc_d + 4;
+                    pc_x = alu_o;
+                    pc_v_x = 1'b1;
+                end
+                JAL:begin
+                    alu_a = pc_d;
+                    alu_b = j_imm;
+                    alu_m = 1'b0;
+                    rd_v = rd_v_x;
+                    rd_data = pc_d + 4;
+                    pc_x = alu_o;
+                    pc_v_x = 1'b1;
                 end
                 default: ;
             endcase

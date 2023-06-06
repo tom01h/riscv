@@ -36,6 +36,7 @@ module trace
     wire signed [11:0] i_imm = inst[31:20];
     wire signed [12:0] b_imm = {inst[31],inst[7],inst[30:25],inst[11:8],1'b0};
     wire signed [31:0] u_imm = {inst[31:12],12'b0};
+    wire signed [20:0] j_imm = {inst[31],inst[19:12],inst[20],inst[30:21],1'b0};
 
     always_comb begin
         reg_s1.itoa(rs1);
@@ -156,9 +157,21 @@ module trace
                     end
                 endcase
             end
+            AUIPC:begin
+                immediate.itoa(u_imm);
+                asm={"auipc   x", reg_d, ", pc + ", immediate};
+            end
             LUI:begin
                 immediate.itoa(u_imm);
                 asm={"lui     x", reg_d, ", ", immediate};
+            end
+            JALR:begin
+                immediate.itoa(i_imm);
+                asm={"jalr    x", reg_d, ", x", reg_s1, ", ", immediate};
+            end
+            JAL:begin
+                immediate.itoa(j_imm);
+                asm={"jal     x", reg_d, ", pc + ", immediate};
             end
             default:begin
                 asm="Unimplemented";
@@ -176,6 +189,9 @@ module trace
             end
             if (rdv) begin
                 $write("x%2d <= 0x%08x", rd_x, rd_data);
+            end    
+            if (rdv & pcv) begin
+                $write(" / ");
             end    
             if (pcv) begin
                 $write("PC  <= 0x%08x", pc_x);

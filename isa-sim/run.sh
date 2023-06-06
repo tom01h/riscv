@@ -7,7 +7,8 @@ for t in "${@}"; do
 
     spike -l --log=log/$t.spike.log --isa=rv32i ../isa/$t
 
-    reset=`grep "<test_2>:" ../isa/$t.dump | sed "s#\ .*##"`
+    reset=`grep "add\s.*test_[0-9]*>" ../isa/$t.dump | sed "s/.*# //; s#\s.*##"`
+    #reset=`grep "<test_2>:" ../isa/$t.dump | sed "s#\ .*##"`
     pass=`grep "<pass>:" ../isa/$t.dump | sed "s#\ .*##"`
     fail=`grep "<fail>:" ../isa/$t.dump | sed "s#\ .*##"`
 

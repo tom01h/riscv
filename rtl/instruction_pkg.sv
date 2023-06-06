@@ -36,5 +36,8 @@ parameter BGE  = 3'b101;
 parameter BLTU = 3'b110;
 parameter BGEU = 3'b111;
 
-parameter LUI = 5'b01_101;
+parameter AUIPC = 5'b00_101;
+parameter LUI   = 5'b01_101;
+parameter JALR  = 5'b11_001;
+parameter JAL   = 5'b11_011;
 endpackage : instruction_pkg
