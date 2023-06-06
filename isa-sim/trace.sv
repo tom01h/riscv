@@ -57,6 +57,12 @@ module trace
                             end
                         endcase
                     end
+                    SLT:begin
+                        asm={"slt     x", reg_d, ", x", reg_s1, ", x", reg_s2};
+                    end
+                    SLTU:begin
+                        asm={"sltu    x", reg_d, ", x", reg_s1, ", x", reg_s2};
+                    end
                     SLL:begin
                         asm={"sll     x", reg_d, ", x", reg_s1, ", x", reg_s2};
                     end

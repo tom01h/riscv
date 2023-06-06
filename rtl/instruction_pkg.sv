@@ -3,8 +3,8 @@ package instruction_pkg;
 parameter OP = 5'b01_100;
 
 parameter ADD_SUB  = 3'b000;
-//parameter SLT      = 3'b010;
-//parameter SLTU     = 3'b011;
+parameter SLT      = 3'b010;
+parameter SLTU     = 3'b011;
 //parameter XOR      = 3'b100;
 //parameter OR       = 3'b110;
 //parameter AND      = 3'b111;

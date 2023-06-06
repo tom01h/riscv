@@ -71,16 +71,25 @@ module execution
     logic signed [31:0] alu_b;
     logic alu_m;
     logic signed [31:0] alu_o;
+    
+    assign alu_o = alu_a + ((alu_m) ? ~alu_b : alu_b) + alu_m;
+
     logic [4:0] shamt;
     logic sha;
     logic signed [31:0] shift_l;
     logic signed [31:0] shift_r;
-    logic eq_o;
-    assign alu_o = alu_a + ((alu_m) ? ~alu_b : alu_b) + alu_m;
-    assign eq_o = (rs1_data == rs2_data);
     assign shamt = alu_b[4:0];
+    
     assign shift_l = rs1_data << shamt;
     assign shift_r = (sha) ? (rs1_data >>> shamt) : (rs1_data >> shamt);
+
+    logic signed [32:0] cmp_a;
+    logic signed [32:0] cmp_b;
+    logic eq_o;
+    logic lt_o;
+
+    assign eq_o = (cmp_a == cmp_b);
+    assign lt_o = (cmp_a < cmp_b);
 
     always_comb begin
         imm = 32'hx;
@@ -88,6 +97,8 @@ module execution
         alu_b = 32'hx;
         alu_m = 1'hx;
         sha = 1'bx;
+        cmp_a = 33'hx;
+        cmp_b = 33'hx;
         rd_v = 1'b0;
         rd_data = 32'hx;
         pc_v_x = 1'b0;
@@ -103,6 +114,16 @@ module execution
                                 default: ;
                             endcase
                             rd_data = alu_o;
+                        end
+                        SLT:begin
+                            cmp_a = rs1_data; // sign ext
+                            cmp_b = rs2_data; // sign ext
+                            rd_data = {31'h0, lt_o};
+                        end
+                        SLTU:begin
+                            cmp_a = {1'b0, rs1_data}; // zero ext
+                            cmp_b = {1'b0, rs2_data}; // zero ext
+                            rd_data = {31'h0, lt_o};
                         end
                         SLL:begin
                             rd_data = shift_l;
@@ -147,8 +168,16 @@ module execution
                 end
                 BRANCH:begin
                     case(funct3)
-                        BEQ: pc_v_x = eq_o;
-                        BNE: pc_v_x = !eq_o;
+                        BEQ: begin
+                            pc_v_x = eq_o;
+                            cmp_a = {1'bx, rs1_data};
+                            cmp_b = {1'bx, rs2_data};
+                        end
+                        BNE: begin
+                            pc_v_x = !eq_o;
+                            cmp_a = {1'bx, rs1_data};
+                            cmp_b = {1'bx, rs2_data};
+                        end
                         default: ;
                     endcase
                     imm = 32'(signed'(b_imm));

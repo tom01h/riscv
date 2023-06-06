@@ -56,4 +56,4 @@ all:
 
 maintainer-copy::
 clean mostlyclean distclean maintainer-clean::
-	-rm -rf obj_dir *.log *.dmp *.vpd core
+	-rm -rf obj_dir *.log *.dmp *.vpd core log/
