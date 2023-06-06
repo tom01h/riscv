@@ -12,7 +12,7 @@ module execution
     output logic [31:0] pc_x
 );
 
-    logic [31:0] pc_d;
+    logic signed [31:0] pc_d;
     logic inst_v_x;
     logic [31:0] inst_x;
 
@@ -66,13 +66,14 @@ module execution
     end
 
     /* verilator lint_off WIDTHEXPAND */
-    logic signed [31:0] imm;
-    logic signed [31:0] alu_a;
-    logic signed [31:0] alu_b;
+    logic signed [32:0] alu_a;
+    logic signed [32:0] alu_b;
     logic alu_m;
     logic signed [31:0] alu_o;
+    logic signed [33:0] alu_l;
     
-    assign alu_o = alu_a + ((alu_m) ? ~alu_b : alu_b) + alu_m;
+    assign alu_l = (alu_m) ? (alu_a  - alu_b) : (alu_a + alu_b);
+    assign alu_o = alu_l[31:0];
 
     logic [4:0] shamt;
     logic sha;
@@ -83,29 +84,32 @@ module execution
     assign shift_l = rs1_data << shamt;
     assign shift_r = (sha) ? (rs1_data >>> shamt) : (rs1_data >> shamt);
 
-    logic signed [32:0] cmp_a;
-    logic signed [32:0] cmp_b;
+    logic signed [31:0] cmp_a;
+    logic signed [31:0] cmp_b;
     logic eq_o;
     logic lt_o;
 
     assign eq_o = (cmp_a == cmp_b);
-    assign lt_o = (cmp_a < cmp_b);
+    assign lt_o = alu_l[33];
+
+    assign pc_x = pc_d + b_imm;
 
     always_comb begin
-        imm = 32'hx;
-        alu_a = 32'hx;
-        alu_b = 32'hx;
+        alu_a = 33'hx;
+        alu_b = 33'hx;
         alu_m = 1'hx;
         sha = 1'bx;
-        cmp_a = 33'hx;
-        cmp_b = 33'hx;
+        cmp_a = 32'hx;
+        cmp_b = 32'hx;
         rd_v = 1'b0;
         rd_data = 32'hx;
         pc_v_x = 1'b0;
-        pc_x = 32'hx;
         if(inst_v_x) begin
             case(opcode)
                 OP:begin
+                    alu_a = rs1_data;
+                    alu_b = rs2_data;
+                    rd_v = rd_v_x;
                     case(funct3)
                         ADD_SUB:begin
                             case(funct7)
@@ -116,13 +120,13 @@ module execution
                             rd_data = alu_o;
                         end
                         SLT:begin
-                            cmp_a = rs1_data; // sign ext
-                            cmp_b = rs2_data; // sign ext
+                            alu_m = 1'b1;
                             rd_data = {31'h0, lt_o};
                         end
                         SLTU:begin
-                            cmp_a = {1'b0, rs1_data}; // zero ext
-                            cmp_b = {1'b0, rs2_data}; // zero ext
+                            alu_m = 1'b1;
+                            alu_a[32] = 1'b0; // unsigned
+                            alu_b[32] = 1'b0; // unsigned
                             rd_data = {31'h0, lt_o};
                         end
                         SLL:begin
@@ -138,25 +142,24 @@ module execution
                         end    
                         default: ;
                     endcase
-                    alu_a = rs1_data;
-                    alu_b = rs2_data;
-                    rd_v = rd_v_x;
                 end
                 OPIMM:begin
-                    imm = 32'(signed'(i_imm));
+                    alu_a = rs1_data;
+                    alu_b = 32'(signed'(i_imm));
+                    rd_v = rd_v_x;
                     case(funct3)
                         ADDI:begin
                             alu_m = 1'b0;
                             rd_data = alu_o;
                         end
                         SLTI:begin
-                            cmp_a = rs1_data; // sign ext
-                            cmp_b = imm;      // sign ext
+                            alu_m = 1'b1;
                             rd_data = {31'h0, lt_o};
                         end
                         SLTIU:begin
-                            cmp_a = {1'b0, rs1_data}; // zero ext
-                            cmp_b = {1'b0,      imm}; // zero ext
+                            alu_m = 1'b1;
+                            alu_a[32] = 1'b0; // unsigned
+                            alu_b[32] = 1'b0; // unsigned
                             rd_data = {31'h0, lt_o};
                         end
                         SLLI:begin
@@ -172,54 +175,47 @@ module execution
                         end
                         default: ;
                     endcase
-                    alu_a = rs1_data;
-                    alu_b = imm;
-                    rd_v = rd_v_x;
                 end
                 BRANCH:begin
+                    alu_a = rs1_data;
+                    alu_b = rs2_data;
                     case(funct3)
                         BEQ: begin
                             pc_v_x = eq_o;
-                            cmp_a = {1'bx, rs1_data};
-                            cmp_b = {1'bx, rs2_data};
+                            cmp_a = rs1_data;
+                            cmp_b = rs2_data;
                         end
                         BNE: begin
                             pc_v_x = !eq_o;
-                            cmp_a = {1'bx, rs1_data};
-                            cmp_b = {1'bx, rs2_data};
+                            cmp_a = rs1_data;
+                            cmp_b = rs2_data;
                         end
                         BLT: begin
+                            alu_m = 1'b1;
                             pc_v_x = lt_o;
-                            cmp_a = rs1_data; // sign ext
-                            cmp_b = rs2_data; // sign ext
                         end
                         BGE: begin
+                            alu_m = 1'b1;
                             pc_v_x = !lt_o;
-                            cmp_a = rs1_data; // sign ext
-                            cmp_b = rs2_data; // sign ext
                         end
                         BLTU: begin
+                            alu_m = 1'b1;
                             pc_v_x = lt_o;
-                            cmp_a = {1'b0, rs1_data}; // zero ext
-                            cmp_b = {1'b0, rs2_data}; // zero ext
+                            alu_a[32] = 1'b0; // unsigned
+                            alu_b[32] = 1'b0; // unsigned
                         end
                         BGEU: begin
+                            alu_m = 1'b1;
                             pc_v_x = !lt_o;
-                            cmp_a = {1'b0, rs1_data}; // zero ext
-                            cmp_b = {1'b0, rs2_data}; // zero ext
+                            alu_a[32] = 1'b0; // unsigned
+                            alu_b[32] = 1'b0; // unsigned
                         end
                         default: ;
                     endcase
-                    imm = 32'(signed'(b_imm));
-                    alu_a = pc_d;
-                    alu_b = imm;
-                    alu_m = 1'b0;
-                    pc_x = alu_o;
                 end
                 LUI:begin
-                    imm = u_imm;
                     alu_a = 0;
-                    alu_b = imm;
+                    alu_b = u_imm;
                     alu_m = 1'b0;
                     rd_v = rd_v_x;
                     rd_data = alu_o;
