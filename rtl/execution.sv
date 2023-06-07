@@ -3,8 +3,8 @@
 module execution
     import instruction_pkg::*;
 (
-    input clk,
-    input reset,
+    input logic clk,
+    input logic reset,
     input logic [31:0] pc_i,
     input logic inst_v_i,
     input logic [31:0] inst_i,

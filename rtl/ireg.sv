@@ -2,12 +2,12 @@
 
 module ireg
 (
-    input clk,
-    input [4:0] rs1,
-    input [4:0] rs2,
-    input [4:0] rd,
-    input rdx_v,
-    input rdm_v,
+    input logic clk,
+    input logic [4:0] rs1,
+    input logic [4:0] rs2,
+    input logic [4:0] rd,
+    input logic rdx_v,
+    input logic rdm_v,
     input logic signed [31:0] rd_data_x,
     output logic signed [31:0] rs1_data,
     output logic signed [31:0] rs2_data

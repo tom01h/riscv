@@ -2,8 +2,8 @@
 
 module instruction
 (
-    input clk,
-    input reset,
+    input logic clk,
+    input logic reset,
     output logic inst_v_i,
     output logic [31:0] pc_p,
     output logic [31:0] pc_i,

@@ -2,8 +2,8 @@
 
 module cpu
 (
-    input clk,
-    input reset
+    input logic clk,
+    input logic reset
 );
     logic reset_p, reset_d;
     always_ff @ (posedge clk)
