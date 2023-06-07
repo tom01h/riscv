@@ -74,7 +74,7 @@ module top
         cpu.instruction.reset_pc = reset_pc;
         $display("");
 
-        cpu.execution.register[0] = 32'h0;
+        cpu.ireg.register[0] = 32'h0;
         $readmemh("inst.hex", cpu.itcm.imem);
     end
 

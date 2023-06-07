@@ -9,7 +9,14 @@ module execution
     input logic inst_v_i,
     input logic [31:0] inst_i,
     output logic pc_v_x,
-    output logic [31:0] pc_x
+    output logic [31:0] pc_x,
+    output logic [4:0] rs1,
+    output logic [4:0] rs2,
+    output logic [4:0] rd,
+    output logic rd_v,
+    output logic signed [31:0] rd_data,
+    input logic signed [31:0] rs1_data,
+    input logic signed [31:0] rs2_data
 );
 
     logic signed [31:0] pc_d;
@@ -28,43 +35,18 @@ module execution
         end
     end
 
+    assign rs1 = inst_i[19:15];
+    assign rs2 = inst_i[24:20];
+    assign rd = inst_x[11:7];
+    wire  rd_v_x = (rd != 0);
+
     wire [4:0] opcode = inst_x[6:2];
     wire [6:0] funct7 = inst_x[31:25];
     wire [2:0] funct3 = inst_x[14:12];
-    wire [4:0] rs1 = inst_i[19:15];
-    wire [4:0] rs2 = inst_i[24:20];
-    wire [4:0] rd = inst_x[11:7];
     wire signed [11:0] i_imm = inst_x[31:20];
     wire signed [12:0] b_imm = {inst_x[31],inst_x[7],inst_x[30:25],inst_x[11:8],1'b0};
     wire signed [31:0] u_imm = {inst_x[31:12],12'b0};
     wire signed [20:0] j_imm = {inst_x[31],inst_x[19:12],inst_x[20],inst_x[30:21],1'b0};
-
-    logic signed [31:0] register [0:31];
-    logic signed [31:0] rs1_rdata;
-    logic signed [31:0] rs1_data;
-    logic rs1_bypass;
-    logic signed [31:0] rs2_rdata;
-    logic signed [31:0] rs2_data;
-    logic rs2_bypass;
-    logic rd_v;
-    wire  rd_v_x = (rd != 0);
-    logic signed [31:0] rd_data;
-    logic signed [31:0] rd_data_m;
-    
-    always_ff @ (posedge clk) begin
-        if(rd_v) register[rd] <= rd_data;
-        rs1_rdata <= register[rs1];
-        rs2_rdata <= register[rs2];
-    end
-
-    assign rs1_data = (rs1_bypass) ? rd_data_m : rs1_rdata;
-    assign rs2_data = (rs2_bypass) ? rd_data_m : rs2_rdata;
-
-    always_ff @ (posedge clk) begin
-        rs1_bypass <= (rs1 == rd) & rd_v;
-        rs2_bypass <= (rs2 == rd) & rd_v;
-        if (rd_v) rd_data_m <= rd_data;
-    end
 
     /* verilator lint_off WIDTHEXPAND */
     logic signed [32:0] alu_a;
@@ -95,6 +77,9 @@ module execution
 
     logic signed [31:0] br_pc;
     assign br_pc = pc_d + b_imm;
+
+    logic signed [31:0] link_pc;
+    assign link_pc = pc_d + 4;
 
     always_comb begin
         alu_a = 33'hx;
@@ -236,7 +221,7 @@ module execution
                     alu_b = i_imm;
                     alu_m = 1'b0;
                     rd_v = rd_v_x;
-                    rd_data = pc_d + 4;
+                    rd_data = link_pc;
                     pc_x = alu_o;
                     pc_v_x = 1'b1;
                 end
@@ -245,7 +230,7 @@ module execution
                     alu_b = j_imm;
                     alu_m = 1'b0;
                     rd_v = rd_v_x;
-                    rd_data = pc_d + 4;
+                    rd_data = link_pc;
                     pc_x = alu_o;
                     pc_v_x = 1'b1;
                 end

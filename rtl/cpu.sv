@@ -38,6 +38,14 @@ module cpu
         
     );
 
+    logic [4:0] rs1;
+    logic [4:0] rs2;
+    logic [4:0] rd;
+    logic rd_v;
+    logic signed [31:0] rd_data;
+    logic signed [31:0] rs1_data;
+    logic signed [31:0] rs2_data;
+
     execution execution
     (
         .clk      (clk),
@@ -46,6 +54,26 @@ module cpu
         .inst_v_i (inst_v_i),
         .inst_i   (inst_i),
         .pc_v_x   (pc_v_x),
-        .pc_x     (pc_x)
+        .pc_x     (pc_x),
+        .rs1      (rs1),
+        .rs2      (rs2),
+        .rd       (rd),
+        .rd_v     (rd_v),
+        .rd_data  (rd_data),
+        .rs1_data (rs1_data),
+        .rs2_data (rs2_data)
     );
+
+    ireg ireg
+    (
+        .clk      (clk),
+        .rs1      (rs1),
+        .rs2      (rs2),
+        .rd       (rd),
+        .rd_v     (rd_v),
+        .rd_data  (rd_data),
+        .rs1_data (rs1_data),
+        .rs2_data (rs2_data)
+    );
+    
 endmodule

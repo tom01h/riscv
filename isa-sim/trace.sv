@@ -130,27 +130,27 @@ module trace
                 case(funct3)
                     BEQ:begin
                         immediate.itoa(b_imm);
-                        asm={"beq     x", reg_d, ", x", reg_s1, ", pc + ", immediate};
+                        asm={"beq     x", reg_s1, ", x", reg_s2, ", pc + ", immediate};
                     end
                     BNE:begin
                         immediate.itoa(b_imm);
-                        asm={"bne     x", reg_d, ", x", reg_s1, ", pc + ", immediate};
+                        asm={"bne     x", reg_s1, ", x", reg_s2, ", pc + ", immediate};
                     end
                     BLT:begin
                         immediate.itoa(b_imm);
-                        asm={"blt     x", reg_d, ", x", reg_s1, ", pc + ", immediate};
+                        asm={"blt     x", reg_s1, ", x", reg_s2, ", pc + ", immediate};
                     end
                     BGE:begin
                         immediate.itoa(b_imm);
-                        asm={"bge     x", reg_d, ", x", reg_s1, ", pc + ", immediate};
+                        asm={"bge     x", reg_s1, ", x", reg_s2, ", pc + ", immediate};
                     end
                     BLTU:begin
                         immediate.itoa(b_imm);
-                        asm={"bltu    x", reg_d, ", x", reg_s1, ", pc + ", immediate};
+                        asm={"bltu    x", reg_s1, ", x", reg_s2, ", pc + ", immediate};
                     end
                     BGEU:begin
                         immediate.itoa(b_imm);
-                        asm={"bgeu    x", reg_d, ", x", reg_s1, ", pc + ", immediate};
+                        asm={"bgeu    x", reg_s1, ", x", reg_s2, ", pc + ", immediate};
                     end
                     default:begin
                         asm="Unimplemented";
