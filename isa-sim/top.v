@@ -20,8 +20,7 @@ module top
 
     always @ (negedge clk) begin
         inst_v_m <= inst_v_x;
-        //inst_v_r <= inst_v_m;
-        inst_v_r <= inst_v_x;
+        inst_v_r <= inst_v_m;
     end    
 
     int ci = 0;
@@ -44,9 +43,9 @@ module top
         .valid    (cpu.inst_v_i),
         .pc       (cpu.pc_i),
         .inst     (cpu.inst_i),
-        .rdv      (cpu.execution.rd_v),
-        .rd_x     (cpu.execution.rd),
-        .rd_data  (cpu.execution.rd_data),
+        .rdv      (cpu.ireg.rdm_v_m),
+        .rd_m     (cpu.ireg.rd_m),
+        .rd_data  (cpu.ireg.rd_data_m),
         .pcv      (cpu.execution.pc_v_x),
         .pc_x     (cpu.pc_x),
         .inst_v_i (inst_v_i),

@@ -66,14 +66,15 @@ module cpu
 
     ireg ireg
     (
-        .clk      (clk),
-        .rs1      (rs1),
-        .rs2      (rs2),
-        .rd       (rd),
-        .rd_v     (rd_v),
-        .rd_data  (rd_data),
-        .rs1_data (rs1_data),
-        .rs2_data (rs2_data)
+        .clk       (clk),
+        .rs1       (rs1),
+        .rs2       (rs2),
+        .rd        (rd),
+        .rdx_v     (rd_v),
+        .rdm_v     (rd_v),
+        .rd_data_x (rd_data),
+        .rs1_data  (rs1_data),
+        .rs2_data  (rs2_data)
     );
     
 endmodule

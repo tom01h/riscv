@@ -8,7 +8,7 @@ module trace
     input [31:0] pc,
     input [31:0] inst,
     input rdv,
-    input [4:0] rd_x,
+    input [4:0] rd_m,
     input [31:0] rd_data,
     input pcv,
     input [31:0] pc_x,
@@ -188,7 +188,7 @@ module trace
                 $write("                                                        / ");
             end
             if (rdv) begin
-                $write("x%2d <= 0x%08x", rd_x, rd_data);
+                $write("x%2d <= 0x%08x", rd_m, rd_data);
             end    
             if (rdv & pcv) begin
                 $write(" / ");
@@ -221,8 +221,11 @@ module trace
             if(inst_v_x)begin
                 $fdisplay(konata, "S\t%d\t0\tX", cx);
             end    
+            if(inst_v_m)begin
+                $fdisplay(konata, "S\t%d\t0\tM", cm);
+            end    
             if (rdv) begin
-                $fdisplay(konata, "L\t%d\t1\tx%2d <= 0x%08x\\n", cx, rd_x, rd_data);
+                $fdisplay(konata, "L\t%d\t1\tx%2d <= 0x%08x\\n", cm, rd_m, rd_data);
             end    
             if(inst_v_r)begin
                 $fdisplay(konata, "R\t%d\t%d\t0", cr, cr);
