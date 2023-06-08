@@ -81,10 +81,9 @@ module execution
     assign lt_o = alu_l[33];
 
     logic signed [31:0] br_pc;
-    assign br_pc = pc_d + b_imm;
-
-    logic signed [31:0] link_pc;
-    assign link_pc = pc_d + 4;
+    logic signed [12:0] br_offset;
+    assign br_offset = (opcode == BRANCH) ? b_imm : ((opcode == JAL || opcode == JALR) ? 4 : 13'hx);
+    assign br_pc = pc_d + br_offset;
 
     always_comb begin
         alu_a = 33'hx;
@@ -241,7 +240,7 @@ module execution
                     alu_m = 1'b0;
                     rdx_v = rd_v_x;
                     rdm_v = rd_v_x;
-                    rd_data = link_pc;
+                    rd_data = br_pc;
                     pc_x = alu_o;
                     pc_v_x = 1'b1;
                 end
@@ -251,7 +250,7 @@ module execution
                     alu_m = 1'b0;
                     rdx_v = rd_v_x;
                     rdm_v = rd_v_x;
-                    rd_data = link_pc;
+                    rd_data = br_pc;
                     pc_x = alu_o;
                     pc_v_x = 1'b1;
                 end
