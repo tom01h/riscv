@@ -49,6 +49,7 @@ module execution
     wire [6:0] funct7 = inst_x[31:25];
     wire [2:0] funct3 = inst_x[14:12];
     wire signed [11:0] i_imm = inst_x[31:20];
+    wire signed [11:0] s_imm = {inst_x[31:25],inst_x[11:7]};
     wire signed [12:0] b_imm = {inst_x[31],inst_x[7],inst_x[30:25],inst_x[11:8],1'b0};
     wire signed [31:0] u_imm = {inst_x[31:12],12'b0};
     wire signed [20:0] j_imm = {inst_x[31],inst_x[19:12],inst_x[20],inst_x[30:21],1'b0};
@@ -263,6 +264,14 @@ module execution
                     rdm_v = rd_v_x;
                     rd_data = alu_o;
                     minst = {1'b0, funct3};
+                end
+                STORE:begin
+                    alu_a = rs1_data;
+                    rs1_v = 1'b1;
+                    alu_b = s_imm;
+                    alu_m = 1'b0;
+                    rd_data = alu_o;
+                    minst = {1'b1, funct3};
                 end
                 default: ;
             endcase

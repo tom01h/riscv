@@ -48,9 +48,9 @@ parameter LW   = 3'b010;
 parameter LBU  = 3'b100;
 parameter LHU  = 3'b101;
 
-//parameter STORE = 5'b01_000;
-//parameter SB   = 3'b000;
-//parameter SH   = 3'b001;
-//parameter SW   = 3'b010;
+parameter STORE = 5'b01_000;
+parameter SB   = 3'b000;
+parameter SH   = 3'b001;
+parameter SW   = 3'b010;
 
 endpackage : instruction_pkg

@@ -98,8 +98,10 @@ module cpu
     
         
     logic dtcm_en;
+    logic [3:0] dtcm_wen;
     logic [31:0] dtcm_addr;
     logic [31:0] dtcm_rdata;
+    logic [31:0] dtcm_wdata;
     
     mem_access mem_access
     (
@@ -107,18 +109,22 @@ module cpu
         //.reset      (reset),
         .minst      (minst),
         .rdx_v      (rdx_v),
+        .rs2_data_x (rs2_data),
         .rd_data_x  (rd_data_x),
         .rd_data_m  (rd_data_m),
         .dtcm_en    (dtcm_en),
+        .dtcm_wen   (dtcm_wen),
         .dtcm_addr  (dtcm_addr),
-        .dtcm_rdata (dtcm_rdata)
-
+        .dtcm_rdata (dtcm_rdata),
+        .dtcm_wdata (dtcm_wdata)
     );
     
     dtcm dtcm
     (
         .clk      (clk),
         .addr     (dtcm_addr),
-        .data_o   (dtcm_rdata)
+        .wen      (dtcm_wen),
+        .data_o   (dtcm_rdata),
+        .data_i   (dtcm_wdata)
     );
 endmodule

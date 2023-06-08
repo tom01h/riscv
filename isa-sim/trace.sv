@@ -34,6 +34,7 @@ module trace
     wire [4:0] rs2 = inst[24:20];
     wire [4:0] rd = inst[11:7];
     wire signed [11:0] i_imm = inst[31:20];
+    wire signed [11:0] s_imm = {inst[31:25],inst[11:7]};
     wire signed [12:0] b_imm = {inst[31],inst[7],inst[30:25],inst[11:8],1'b0};
     wire signed [31:0] u_imm = {inst[31:12],12'b0};
     wire signed [20:0] j_imm = {inst[31],inst[19:12],inst[20],inst[30:21],1'b0};
@@ -176,24 +177,21 @@ module trace
             LOAD:begin
                 immediate.itoa(i_imm);
                 case(funct3)
-                    LB:begin
-                        asm={"lb      x", reg_d, ", ", immediate, "(x", reg_s1, ")"};
-                    end
-                    LH:begin
-                        asm={"lh      x", reg_d, ", ", immediate, "(x", reg_s1, ")"};
-                    end
-                    LW:begin
-                        asm={"lw      x", reg_d, ", ", immediate, "(x", reg_s1, ")"};
-                    end
-                    LBU:begin
-                        asm={"lbu     x", reg_d, ", ", immediate, "(x", reg_s1, ")"};
-                    end
-                    LHU:begin
-                        asm={"lhu     x", reg_d, ", ", immediate, "(x", reg_s1, ")"};
-                    end
-                    default:begin
-                        asm="Unimplemented";
-                    end
+                    LB:  asm={"lb      x", reg_d, ", ", immediate, "(x", reg_s1, ")"};
+                    LH:  asm={"lh      x", reg_d, ", ", immediate, "(x", reg_s1, ")"};
+                    LW:  asm={"lw      x", reg_d, ", ", immediate, "(x", reg_s1, ")"};
+                    LBU: asm={"lbu     x", reg_d, ", ", immediate, "(x", reg_s1, ")"};
+                    LHU: asm={"lhu     x", reg_d, ", ", immediate, "(x", reg_s1, ")"};
+                    default: asm="Unimplemented";
+                endcase
+            end
+            STORE:begin
+                immediate.itoa(s_imm);
+                case(funct3)
+                    SB:  asm={"sb      x", reg_s2, ", ", immediate, "(x", reg_s1, ")"};
+                    SH:  asm={"sh      x", reg_s2, ", ", immediate, "(x", reg_s1, ")"};
+                    SW:  asm={"sw      x", reg_s2, ", ", immediate, "(x", reg_s1, ")"};
+                    default: asm="Unimplemented";
                 endcase
             end
             default:begin
