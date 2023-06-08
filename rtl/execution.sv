@@ -263,7 +263,7 @@ module execution
                     rdx_v = 1'b0;
                     rdm_v = rd_v_x;
                     rd_data = alu_o;
-                    minst = {1'b0, LW};
+                    minst = {1'b0, funct3};
                 end
                 default: ;
             endcase

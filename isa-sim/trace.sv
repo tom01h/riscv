@@ -176,8 +176,20 @@ module trace
             LOAD:begin
                 immediate.itoa(i_imm);
                 case(funct3)
+                    LB:begin
+                        asm={"lb      x", reg_d, ", ", immediate, "(x", reg_s1, ")"};
+                    end
+                    LH:begin
+                        asm={"lh      x", reg_d, ", ", immediate, "(x", reg_s1, ")"};
+                    end
                     LW:begin
                         asm={"lw      x", reg_d, ", ", immediate, "(x", reg_s1, ")"};
+                    end
+                    LBU:begin
+                        asm={"lbu     x", reg_d, ", ", immediate, "(x", reg_s1, ")"};
+                    end
+                    LHU:begin
+                        asm={"lhu     x", reg_d, ", ", immediate, "(x", reg_s1, ")"};
                     end
                     default:begin
                         asm="Unimplemented";
