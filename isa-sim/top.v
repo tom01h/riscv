@@ -13,8 +13,8 @@ module top
         .reset   (reset)
     );
 
-    wire inst_v_i = cpu.inst_v_i;
-    wire inst_v_x = cpu.execution.inst_v_x;
+    wire inst_v_i = cpu.inst_v_i           & !cpu.stall_i;
+    wire inst_v_x = cpu.execution.inst_v_x & !cpu.hazard_x;
     reg  inst_v_m;
     reg  inst_v_r;
 
@@ -75,6 +75,7 @@ module top
 
         cpu.ireg.register[0] = 32'h0;
         $readmemh("inst.hex", cpu.itcm.imem);
+        $readmemh("data.hex", cpu.dtcm.dmem);
     end
 
     always @ (posedge clk) begin

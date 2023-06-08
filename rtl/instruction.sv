@@ -4,6 +4,7 @@ module instruction
 (
     input logic clk,
     input logic reset,
+    input logic stall_i,
     output logic inst_v_i,
     output logic [31:0] pc_p,
     output logic [31:0] pc_i,
@@ -22,13 +23,15 @@ module instruction
             pc_p = reset_pc;
         end else if (pc_v_x) begin
             pc_p = pc_x;
-        end else begin
+        end else if(!stall_i)begin
             pc_p = pc_i + 'd4;
-        end
+        end else begin
+            pc_p = pc_i;
+        end    
     end
 
     logic inst_v_l;
-    assign inst_v_i = inst_v_l & !pc_v_x;
+    assign inst_v_i = inst_v_l & !stall_i & !pc_v_x;
 
     always_ff @ (posedge clk) begin
         pc_i <= pc_p;

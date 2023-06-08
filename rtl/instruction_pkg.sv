@@ -40,4 +40,17 @@ parameter AUIPC = 5'b00_101;
 parameter LUI   = 5'b01_101;
 parameter JALR  = 5'b11_001;
 parameter JAL   = 5'b11_011;
+
+parameter LOAD = 5'b00_000;
+//parameter LB   = 3'b000;
+//parameter LH   = 3'b001;
+parameter LW   = 3'b010;
+//parameter LBU  = 3'b100;
+//parameter LHU  = 3'b101;
+
+//parameter STORE = 5'b01_000;
+//parameter SB   = 3'b000;
+//parameter SH   = 3'b001;
+//parameter SW   = 3'b010;
+
 endpackage : instruction_pkg

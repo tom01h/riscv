@@ -3,7 +3,8 @@ mkdir log/
 
 for t in "${@}"; do
     echo -n "$t : "
-    hexdump ../isa/$t -s 4096 -n 4096 -v -e '1/4 "%08X\n"' > inst.hex
+    hexdump ../isa/$t -s  4096 -n 4096 -v -e '1/4 "%08X\n"' > inst.hex
+    hexdump ../isa/$t -s 12288 -n 4096 -v -e '1/4 "%08X\n"' > data.hex
 
     spike -l --log=log/$t.spike.log --isa=rv32i ../isa/$t
 

@@ -10,6 +10,9 @@ module cpu
         reset_d <= reset;
     assign reset_p = reset | reset_d;
 
+    logic stall_i;
+    logic hazard_x;
+
     logic inst_v_i;
     logic [31:0] pc_p;
     logic [31:0] pc_i;
@@ -21,6 +24,7 @@ module cpu
     (
         .clk      (clk),
         .reset    (reset_p),
+        .stall_i  (stall_i),
         .inst_v_i (inst_v_i),
         .pc_p     (pc_p),
         .pc_i     (pc_i),
@@ -35,14 +39,17 @@ module cpu
         .clk      (clk),
         .pc_p     (pc_p),
         .inst_i   (inst_i)
-        
     );
 
     logic [4:0] rs1;
     logic [4:0] rs2;
     logic [4:0] rd;
-    logic rd_v;
-    logic signed [31:0] rd_data;
+    logic rs1_v;
+    logic rs2_v;
+    logic rdx_v;
+    logic rdm_v;
+    logic [3:0] minst;
+    logic signed [31:0] rd_data_x;
     logic signed [31:0] rs1_data;
     logic signed [31:0] rs2_data;
 
@@ -52,17 +59,24 @@ module cpu
         .reset    (reset_p),
         .pc_i     (pc_i),
         .inst_v_i (inst_v_i),
+        .hazard_x  (hazard_x),
         .inst_i   (inst_i),
         .pc_v_x   (pc_v_x),
         .pc_x     (pc_x),
         .rs1      (rs1),
         .rs2      (rs2),
         .rd       (rd),
-        .rd_v     (rd_v),
-        .rd_data  (rd_data),
+        .rs1_v    (rs1_v),
+        .rs2_v    (rs2_v),
+        .rdx_v    (rdx_v),
+        .rdm_v    (rdm_v),
+        .minst    (minst),
+        .rd_data  (rd_data_x),
         .rs1_data (rs1_data),
         .rs2_data (rs2_data)
     );
+
+    logic signed [31:0] rd_data_m;
 
     ireg ireg
     (
@@ -70,11 +84,41 @@ module cpu
         .rs1       (rs1),
         .rs2       (rs2),
         .rd        (rd),
-        .rdx_v     (rd_v),
-        .rdm_v     (rd_v),
-        .rd_data_x (rd_data),
+        .rs1_v    (rs1_v),
+        .rs2_v    (rs2_v),
+        .rdx_v     (rdx_v),
+        .rdm_v     (rdm_v),
+        .stall_i   (stall_i),
+        .hazard_x  (hazard_x),
+        .rd_data_x (rd_data_x),
+        .rd_data_m (rd_data_m),
         .rs1_data  (rs1_data),
         .rs2_data  (rs2_data)
     );
     
+        
+    logic dtcm_en;
+    logic [31:0] dtcm_addr;
+    logic [31:0] dtcm_rdata;
+    
+    mem_access mem_access
+    (
+        .clk        (clk),
+        //.reset      (reset),
+        .minst      (minst),
+        .rdx_v      (rdx_v),
+        .rd_data_x  (rd_data_x),
+        .rd_data_m  (rd_data_m),
+        .dtcm_en    (dtcm_en),
+        .dtcm_addr  (dtcm_addr),
+        .dtcm_rdata (dtcm_rdata)
+
+    );
+    
+    dtcm dtcm
+    (
+        .clk      (clk),
+        .addr     (dtcm_addr),
+        .data_o   (dtcm_rdata)
+    );
 endmodule

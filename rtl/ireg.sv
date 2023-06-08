@@ -6,9 +6,14 @@ module ireg
     input logic [4:0] rs1,
     input logic [4:0] rs2,
     input logic [4:0] rd,
+    input logic rs1_v,
+    input logic rs2_v,
     input logic rdx_v,
     input logic rdm_v,
+    output logic stall_i,
+    output logic hazard_x,
     input logic signed [31:0] rd_data_x,
+    input logic signed [31:0] rd_data_m,
     output logic signed [31:0] rs1_data,
     output logic signed [31:0] rs2_data
 );
@@ -20,7 +25,6 @@ module ireg
     logic signed [31:0] rs2_rdata;
     logic rs2_bypass_m;
     logic rs2_bypass_x;
-    logic signed [31:0] rd_data_m;
     logic signed [31:0] rd_data_w;
     
     always_ff @ (posedge clk) begin
@@ -42,10 +46,19 @@ module ireg
         rs2_bypass_x <= (rs2 == rd)   & rdx_v;
         rdm_v_m <= rdm_v;
         if (rdm_v) begin
-            rd_data_m <= rd_data_x;
             rd_m <= rd;
         end
         if (rdm_v_m) rd_data_w <= rd_data_m;
     end
+
+    logic rs1_hazard_x;
+    logic rs2_hazard_x;
+    always_ff @ (posedge clk) begin
+        rs1_hazard_x <= (rs1 == rd) & !rdx_v & rdm_v & rs1_v;
+        rs2_hazard_x <= (rs2 == rd) & !rdx_v & rdm_v & rs2_v;
+    end
+
+    assign stall_i = hazard_x;
+    assign hazard_x = rs1_hazard_x | rs2_hazard_x;
 
 endmodule

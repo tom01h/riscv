@@ -7,13 +7,18 @@ module execution
     input logic reset,
     input logic [31:0] pc_i,
     input logic inst_v_i,
+    input logic hazard_x,
     input logic [31:0] inst_i,
     output logic pc_v_x,
     output logic [31:0] pc_x,
     output logic [4:0] rs1,
     output logic [4:0] rs2,
     output logic [4:0] rd,
-    output logic rd_v,
+    output logic rs1_v,
+    output logic rs2_v,
+    output logic rdx_v,
+    output logic rdm_v,
+    output logic [3:0] minst,
     output logic signed [31:0] rd_data,
     input logic signed [31:0] rs1_data,
     input logic signed [31:0] rs2_data
@@ -26,17 +31,17 @@ module execution
     always_ff @ (posedge clk) begin
         if (reset) begin
             inst_v_x <= 1'b0;
-        end else begin
+        end else if(!hazard_x) begin
             inst_v_x <= inst_v_i;
         end
-        if (inst_v_i) begin
+        if (inst_v_i & !hazard_x) begin
             inst_x <= inst_i;
             pc_d <= pc_i;
         end
     end
 
-    assign rs1 = inst_i[19:15];
-    assign rs2 = inst_i[24:20];
+    assign rs1 = (hazard_x) ? inst_x[19:15] : inst_i[19:15];
+    assign rs2 = (hazard_x) ? inst_x[24:20] : inst_i[24:20];
     assign rd = inst_x[11:7];
     wire  rd_v_x = (rd != 0);
 
@@ -88,16 +93,23 @@ module execution
         sha = 1'bx;
         cmp_a = 32'hx;
         cmp_b = 32'hx;
-        rd_v = 1'b0;
+        rs1_v = 1'b0;
+        rs2_v = 1'b0;
+        rdx_v = 1'b0;
+        rdm_v = 1'b0;
+        minst = 4'b11xx;
         rd_data = 32'hx;
         pc_v_x = 1'b0;
         pc_x = 32'hx;
-        if(inst_v_x) begin
+        if(inst_v_x & !hazard_x) begin
             case(opcode)
                 OP:begin
                     alu_a = rs1_data;
                     alu_b = rs2_data;
-                    rd_v = rd_v_x;
+                    rs1_v = 1'b1;
+                    rs2_v = 1'b1;
+                    rdx_v = rd_v_x;
+                    rdm_v = rd_v_x;
                     case(funct3)
                         ADD_SUB:begin
                             case(funct7)
@@ -133,8 +145,10 @@ module execution
                 end
                 OPIMM:begin
                     alu_a = rs1_data;
+                    rs1_v = 1'b1;
                     alu_b = 32'(signed'(i_imm));
-                    rd_v = rd_v_x;
+                    rdx_v = rd_v_x;
+                    rdm_v = rd_v_x;
                     case(funct3)
                         ADDI:begin
                             alu_m = 1'b0;
@@ -167,6 +181,8 @@ module execution
                 BRANCH:begin
                     alu_a = rs1_data;
                     alu_b = rs2_data;
+                    rs1_v = 1'b1;
+                    rs2_v = 1'b1;
                     pc_x = br_pc;
                     case(funct3)
                         BEQ: begin
@@ -206,21 +222,25 @@ module execution
                     alu_a = pc_d;
                     alu_b = u_imm;
                     alu_m = 1'b0;
-                    rd_v = rd_v_x;
+                    rdx_v = rd_v_x;
+                    rdm_v = rd_v_x;
                     rd_data = alu_o;
                 end
                 LUI:begin
                     alu_a = 0;
                     alu_b = u_imm;
                     alu_m = 1'b0;
-                    rd_v = rd_v_x;
+                    rdx_v = rd_v_x;
+                    rdm_v = rd_v_x;
                     rd_data = alu_o;
                 end
                 JALR:begin
                     alu_a = rs1_data;
+                    rs1_v = 1'b1;
                     alu_b = i_imm;
                     alu_m = 1'b0;
-                    rd_v = rd_v_x;
+                    rdx_v = rd_v_x;
+                    rdm_v = rd_v_x;
                     rd_data = link_pc;
                     pc_x = alu_o;
                     pc_v_x = 1'b1;
@@ -229,10 +249,21 @@ module execution
                     alu_a = pc_d;
                     alu_b = j_imm;
                     alu_m = 1'b0;
-                    rd_v = rd_v_x;
+                    rdx_v = rd_v_x;
+                    rdm_v = rd_v_x;
                     rd_data = link_pc;
                     pc_x = alu_o;
                     pc_v_x = 1'b1;
+                end
+                LOAD:begin
+                    alu_a = rs1_data;
+                    rs1_v = 1'b1;
+                    alu_b = i_imm;
+                    alu_m = 1'b0;
+                    rdx_v = 1'b0;
+                    rdm_v = rd_v_x;
+                    rd_data = alu_o;
+                    minst = {1'b0, LW};
                 end
                 default: ;
             endcase

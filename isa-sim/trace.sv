@@ -173,6 +173,17 @@ module trace
                 immediate.itoa(j_imm);
                 asm={"jal     x", reg_d, ", pc + ", immediate};
             end
+            LOAD:begin
+                immediate.itoa(i_imm);
+                case(funct3)
+                    LW:begin
+                        asm={"lw      x", reg_d, ", ", immediate, "(x", reg_s1, ")"};
+                    end
+                    default:begin
+                        asm="Unimplemented";
+                    end
+                endcase
+            end
             default:begin
                 asm="Unimplemented";
             end    
