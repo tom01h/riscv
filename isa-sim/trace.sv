@@ -65,6 +65,15 @@ module trace
                     SLTU:begin
                         asm={"sltu    x", reg_d, ", x", reg_s1, ", x", reg_s2};
                     end
+                    XOR:begin
+                        asm={"xor     x", reg_d, ", x", reg_s1, ", x", reg_s2};
+                    end
+                    OR:begin
+                        asm={"or      x", reg_d, ", x", reg_s1, ", x", reg_s2};
+                    end
+                    AND:begin
+                        asm={"and     x", reg_d, ", x", reg_s1, ", x", reg_s2};
+                    end
                     SLL:begin
                         asm={"sll     x", reg_d, ", x", reg_s1, ", x", reg_s2};
                     end
@@ -102,6 +111,18 @@ module trace
                     SLTIU:begin
                         immediate.itoa(unsigned'(i_imm));
                         asm={"sltiu   x", reg_d, ", x", reg_s1, ", ", immediate};
+                    end
+                    XORI:begin
+                        immediate.itoa(unsigned'(i_imm));
+                        asm={"xori    x", reg_d, ", x", reg_s1, ", ", immediate};
+                    end
+                    ORI:begin
+                        immediate.itoa(unsigned'(i_imm));
+                        asm={"ori     x", reg_d, ", x", reg_s1, ", ", immediate};
+                    end
+                    ANDI:begin
+                        immediate.itoa(unsigned'(i_imm));
+                        asm={"andi    x", reg_d, ", x", reg_s1, ", ", immediate};
                     end
                     SLLI:begin
                         immediate.itoa(i_imm[4:0]);
