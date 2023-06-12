@@ -3,7 +3,8 @@
 module cpu
 (
     input logic clk,
-    input logic reset
+    input logic reset,
+    output logic [5:0] gpio_data
 );
     logic reset_p, reset_d;
     always_ff @ (posedge clk)
@@ -119,12 +120,27 @@ module cpu
         .dtcm_wdata (dtcm_wdata)
     );
     
+    logic memsel;
+    logic memsel_w;
+    logic [31:0] dtcm_rdata_w;
+    
+    assign memsel = (dtcm_addr[31:28] == 4'h9);
+    assign dtcm_rdata = (memsel_w) ? {26'h0, gpio_data} : dtcm_rdata_w;
+    always_ff @ (posedge clk) begin
+        memsel_w <= memsel;
+        if(reset)begin
+            gpio_data <= 0;
+        end else if(memsel)begin
+            if(dtcm_wen[0]) gpio_data <= dtcm_wdata[5:0];
+        end
+    end
+    
     dtcm dtcm
     (
         .clk      (clk),
         .addr     (dtcm_addr),
-        .wen      (dtcm_wen),
-        .data_o   (dtcm_rdata),
+        .wen      (dtcm_wen & {4{!memsel}}),
+        .data_o   (dtcm_rdata_w),
         .data_i   (dtcm_wdata)
     );
 endmodule

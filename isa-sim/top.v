@@ -1,3 +1,5 @@
+/* verilator lint_off UNUSEDSIGNAL */
+
 module top
 (
     input              clk,
@@ -8,9 +10,12 @@ module top
     int pass_pc;
     int fail_pc;
 
+    logic [5:0] gpio_data;
+
     cpu cpu (
-        .clk     (clk),
-        .reset   (reset)
+        .clk       (clk),
+        .reset     (reset),
+        .gpio_data (gpio_data)
     );
 
     wire inst_v_i = cpu.inst_v_i           & !cpu.stall_i;
