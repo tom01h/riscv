@@ -53,3 +53,17 @@ isa-sim/にて
 ./run.sh テスト名の羅列
 (例えば  ./run.sh rv32ui-p-add rv32ui-p-addi)
 ```
+
+## Verilogに変換してからシミュレーション
+
+### sv2v
+変換は[これ](https://github.com/zachjs/sv2v)使った
+```
+rtl_v/にて (~/work/sv2v/sv2vの部分は適当に書き換えてね)
+./gen.sh
+```
+コンパイル
+```
+isa-sim/にて
+make -f Makefile_v
+```
