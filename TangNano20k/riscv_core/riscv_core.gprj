@@ -9,6 +9,7 @@
         <File path="src/dmem/dmem.v" type="file.verilog" enable="1"/>
         <File path="src/dtcm.v" type="file.verilog" enable="1"/>
         <File path="src/execution.v" type="file.verilog" enable="1"/>
+        <File path="src/gowin_rpll/gowin_rpll.v" type="file.verilog" enable="1"/>
         <File path="src/imem/imem.v" type="file.verilog" enable="1"/>
         <File path="src/instruction.v" type="file.verilog" enable="1"/>
         <File path="src/ireg.v" type="file.verilog" enable="1"/>

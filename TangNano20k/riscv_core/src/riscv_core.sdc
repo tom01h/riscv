@@ -1,4 +1,4 @@
-create_clock -name clk_in -period 20 -waveform {0 10} [get_ports {clk}]
+create_clock -name clk_in -period 37 -waveform {0 18.5} [get_ports {clk_i}]
 report_timing -setup -from_clock [get_clocks {clk_in}] -to_clock [get_clocks {clk_in}]
 report_timing -hold -from_clock [get_clocks {clk_in}] -to_clock [get_clocks {clk_in}]
 report_timing -recovery -from_clock [get_clocks {clk_in}] -to_clock [get_clocks {clk_in}]
