@@ -1,5 +1,5 @@
-//Copyright (C)2014-2023 GOWIN Semiconductor Corporation.
-//All rights reserved.
-//File Title: Timing Constraints file
-//GOWIN Version: 1.9.8.11 Education
-//Created Time: 2023-06-14 22:46:31
+create_clock -name clk_in -period 20 -waveform {0 10} [get_ports {clk}]
+report_timing -setup -from_clock [get_clocks {clk_in}] -to_clock [get_clocks {clk_in}]
+report_timing -hold -from_clock [get_clocks {clk_in}] -to_clock [get_clocks {clk_in}]
+report_timing -recovery -from_clock [get_clocks {clk_in}] -to_clock [get_clocks {clk_in}]
+report_timing -removal -from_clock [get_clocks {clk_in}] -to_clock [get_clocks {clk_in}]

@@ -2,6 +2,8 @@ volatile char *Data = ((volatile char *)0x9a100008);
 
 #define DELAY 10
 #define LOOPCOUNT 2
+//#define DELAY 1000*1000
+//#define LOOPCOUNT 100
 
 int putc(char c)
 {
@@ -22,12 +24,12 @@ int main(void)
             l &= 0xf;
             l <<= (9-i);
             for(int j = 0; j < 6+i; j++){
-                putc((l>>8) & 0x3f);
+                putc(~((l>>8) & 0x3f));
                 l = l << 1;
             }
             l = l >> 2;
             for(int j = 0; j < 6+i; j++){
-                putc((l>>8) & 0x3f);
+                putc(~((l>>8) & 0x3f));
                 l = l >> 1;
             }
         }
