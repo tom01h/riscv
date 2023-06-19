@@ -1,17 +1,16 @@
 # 合成方法
 Windows用の `GOWIN FPGA Designer` を使っています
 ## 準備
-- `rtl_v` で `./gen.sh` して生成したVerilogファイルのうち `itcm.v, dtcm.v` 以外を `TangNano20k/riscv_core/src/` にコピーする
+- `rtl/` のファイルのうち `itcm.sv, dtcm.sv` 以外を `TangNano20k/riscv_core/src/` にコピーする
     - `itcm.v, dtcm.v` は変更を入れているので変更後を置いてある
-    - PLLを追加するために `cpu.v` の先頭を下のように変更する
+    - PLLを追加するために `cpu.sv` の先頭を下のように変更する
     ```
-    module cpu (
-        clk_i,
-        reset,
-        gpio_data
+    module cpu
+    (
+        input logic clk_i,
+        input logic reset,
+        output logic [5:0] gpio_data
     );
-        input wire clk_i;
-        input wire reset;
 
         wire clk;
         Gowin_rPLL RPLL(
