@@ -18,7 +18,8 @@ OBJS +=
 
 TARGET = main
 
-CFLAGS = -nostdinc -nostdlib -fno-builtin -march=rv32i -mabi=ilp32
+#CFLAGS = -nostdinc -nostdlib -fno-builtin -march=rv32i -mabi=ilp32
+CFLAGS = -nostartfiles -fno-builtin -march=rv32i -mabi=ilp32
 CFLAGS += -I.
 #CFLAGS += -g
 CFLAGS += -O
@@ -37,7 +38,7 @@ all :		$(TARGET)
 $(TARGET) :	$(OBJS)
 		$(CC) $(OBJS) -o $(TARGET).elf $(CFLAGS) $(LFLAGS)
 		$(STRIP) $(TARGET).elf -o $(TARGET)
-		$(OBJDUMP) $(TARGET)  $(DFLAGS) > $(TARGET).dump
+		$(OBJDUMP) $(TARGET).elf  $(DFLAGS) > $(TARGET).dump
 		$(OBJCOPY) -O binary $(TARGET) $(TARGET).bin
 		hexdump $(TARGET).bin -s 0 -n 4096 -v -e '1/4 "%08X\n"' > inst.hex
 		hexdump $(TARGET).bin -s 4096 -n 4096 -v -e '1/4 "%08X\n"' > data.hex
