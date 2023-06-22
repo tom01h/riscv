@@ -1,5 +1,22 @@
 # 合成方法
 Windows用の `GOWIN FPGA Designer` を使っています
+
+## クロック
+27MHz OSCじゃなくて AUX_PLL (MS5351M) を使っています
+```
+IO_LOC "clk_i" 10;
+```
+[これ](https://wiki.sipeed.com/hardware/en/tang/tang-nano-20k/example/unbox.html#pll_clk)に従って周波数を設定する
+```
+Ctrl-x
+Ctrl-c
+Enter
+
+TangNano20K />pll_clk O0=27M -s
+target_freq = 27000000, (29,660213,1048575) (0)
+
+```
+
 ## 準備
 - `rtl/` のファイルのうち `itcm.sv, dtcm.sv` 以外を `TangNano20k/riscv_core/src/` にコピーする
     - `itcm.v, dtcm.v` は変更を入れているので変更後を置いてある

@@ -26,6 +26,7 @@ module ireg
     logic rs2_bypass_m;
     logic rs2_bypass_x;
     logic signed [31:0] rd_data_w;
+    logic signed [31:0] rd_datax_m;
     
     always_ff @ (posedge clk) begin
         if(rdm_v_m) register[rd_m] <= rd_data_m;
@@ -33,8 +34,8 @@ module ireg
         rs2_rdata <= register[rs2];
     end
 
-    assign rs1_data = (rs1_bypass_x) ? rd_data_m : ((rs1_bypass_m) ? rd_data_w : rs1_rdata);
-    assign rs2_data = (rs2_bypass_x) ? rd_data_m : ((rs2_bypass_m) ? rd_data_w : rs2_rdata);
+    assign rs1_data = (rs1_bypass_x) ? rd_datax_m : ((rs1_bypass_m) ? rd_data_w : rs1_rdata);
+    assign rs2_data = (rs2_bypass_x) ? rd_datax_m : ((rs2_bypass_m) ? rd_data_w : rs2_rdata);
 
     logic [4:0] rd_m;
     logic rdm_v_m;
@@ -45,6 +46,9 @@ module ireg
         rs1_bypass_x <= (rs1 == rd)   & rdx_v;
         rs2_bypass_x <= (rs2 == rd)   & rdx_v;
         rdm_v_m <= rdm_v;
+        if (rdx_v) begin
+            rd_datax_m <= rd_data_x;
+        end
         if (rdm_v) begin
             rd_m <= rd;
         end
