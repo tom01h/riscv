@@ -15,6 +15,16 @@ parameter SUB_7 = 7'b0100000;
 parameter SRL_7 = 7'b0000000;
 parameter SRA_7 = 7'b0100000;
 
+parameter MUL    = 3'b000;
+parameter MULH   = 3'b001;
+parameter MULHSU = 3'b010;
+parameter MULHU  = 3'b011;
+//parameter DIV    = 3'b100;
+//parameter DIVU   = 3'b101;
+//parameter REM    = 3'b110;
+//parameter REMY   = 3'b111;
+parameter MULDIV_7 = 7'b0000001;
+
 parameter OPIMM = 5'b00_100;
 parameter ADDI      = 3'b000;
 parameter SLTI      = 3'b010;

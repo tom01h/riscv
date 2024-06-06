@@ -73,22 +73,20 @@ module execution
     assign shift_l = rs1_data << shamt;
     assign shift_r = (sha) ? (rs1_data >>> shamt) : (rs1_data >> shamt);
 
-    logic signed [31:0] logic_a;
-    logic signed [31:0] logic_b;
     logic eq_o;
     logic lt_o;
     logic signed [31:0] logic_o;
 
     always_comb begin
         case(funct3)
-            AND: logic_o = logic_a & logic_b; // ANDI
-            OR:  logic_o = logic_a | logic_b; // ORI
-            XOR: logic_o = logic_a ^ logic_b; // XORI
+            AND: logic_o = alu_a[31:0] & alu_b[31:0]; // ANDI
+            OR:  logic_o = alu_a[31:0] | alu_b[31:0]; // ORI
+            XOR: logic_o = alu_a[31:0] ^ alu_b[31:0]; // XORI
             default: logic_o = 32'hx;
         endcase
     end
 
-    assign eq_o = (logic_a == logic_b);
+    assign eq_o = (alu_a[31:0] == alu_b[31:0]);
     assign lt_o = alu_l[33];
 
     logic signed [31:0] br_pc;
@@ -96,13 +94,26 @@ module execution
     assign br_offset = (opcode == BRANCH) ? b_imm : ((opcode == JAL || opcode == JALR) ? 4 : 13'hx);
     assign br_pc = pc_d + br_offset;
 
+    logic signed [63:0] mul_o;
+    logic signed [32:0] mul_a;
+    logic signed [32:0] mul_b;
+
+    always_comb begin
+        case(funct3)
+            MUL:     begin mul_a = rs1_data; mul_b = rs2_data; end
+            MULH:    begin mul_a = rs1_data; mul_b = rs2_data; end
+            MULHSU:  begin mul_a = rs1_data; mul_b = $unsigned(rs2_data); end
+            MULHU:   begin mul_a = $unsigned(rs1_data); mul_b = $unsigned(rs2_data); end
+            default: begin mul_a = rs1_data; mul_b = rs2_data; end
+        endcase
+    end
+    assign mul_o = mul_a * mul_b;
+
     always_comb begin
         alu_a = 33'hx;
         alu_b = 33'hx;
         alu_m = 1'hx;
         sha = 1'bx;
-        logic_a = 32'hx;
-        logic_b = 32'hx;
         rs1_v = 1'b0;
         rs2_v = 1'b0;
         rdx_v = 1'b0;
@@ -120,52 +131,57 @@ module execution
                     rs2_v = 1'b1;
                     rdx_v = rd_v_x;
                     rdm_v = rd_v_x;
-                    case(funct3)
-                        ADD_SUB:begin
-                            case(funct7)
-                                ADD_7: alu_m = 1'b0;
-                                SUB_7: alu_m = 1'b1;
+                    case(funct7)
+                        MULDIV_7:
+                            case(funct3)
+                                MUL:    rd_data = mul_o[31:0];
+                                MULH:   rd_data = mul_o[63:32];
+                                MULHSU: rd_data = mul_o[63:32];
+                                MULHU:  rd_data = mul_o[63:32];
                                 default: ;
                             endcase
-                            rd_data = alu_o;
-                        end
-                        SLT:begin
-                            alu_m = 1'b1;
-                            rd_data = {31'h0, lt_o};
-                        end
-                        SLTU:begin
-                            alu_m = 1'b1;
-                            alu_a[32] = 1'b0; // unsigned
-                            alu_b[32] = 1'b0; // unsigned
-                            rd_data = {31'h0, lt_o};
-                        end
-                        XOR:begin
-                            logic_a = rs1_data;
-                            logic_b = rs2_data;
-                            rd_data = logic_o;
-                        end
-                        OR:begin
-                            logic_a = rs1_data;
-                            logic_b = rs2_data;
-                            rd_data = logic_o;
-                        end
-                        AND:begin
-                            logic_a = rs1_data;
-                            logic_b = rs2_data;
-                            rd_data = logic_o;
-                        end
-                        SLL:begin
-                            rd_data = shift_l;
-                        end
-                        SRL_SRA:begin
-                            case(funct7)
-                                SRL_7: sha = 1'b0;
-                                SRA_7: sha = 1'b1;
+                        default:
+                            case(funct3)
+                                ADD_SUB:begin
+                                    case(funct7)
+                                        ADD_7: alu_m = 1'b0;
+                                        SUB_7: alu_m = 1'b1;
+                                        default: ;
+                                    endcase
+                                    rd_data = alu_o;
+                                end
+                                SLT:begin
+                                    alu_m = 1'b1;
+                                    rd_data = {31'h0, lt_o};
+                                end
+                                SLTU:begin
+                                    alu_m = 1'b1;
+                                    alu_a[32] = 1'b0; // unsigned
+                                    alu_b[32] = 1'b0; // unsigned
+                                    rd_data = {31'h0, lt_o};
+                                end
+                                XOR:begin
+                                    rd_data = logic_o;
+                                end
+                                OR:begin
+                                    rd_data = logic_o;
+                                end
+                                AND:begin
+                                    rd_data = logic_o;
+                                end
+                                SLL:begin
+                                    rd_data = shift_l;
+                                end
+                                SRL_SRA:begin
+                                    case(funct7)
+                                        SRL_7: sha = 1'b0;
+                                        SRA_7: sha = 1'b1;
+                                        default: ;
+                                    endcase
+                                    rd_data = shift_r;
+                                end
                                 default: ;
-                            endcase                        
-                            rd_data = shift_r;
-                        end    
-                        default: ;
+                            endcase
                     endcase
                 end
                 OPIMM:begin
@@ -190,18 +206,12 @@ module execution
                             rd_data = {31'h0, lt_o};
                         end
                         XORI:begin
-                            logic_a = rs1_data;
-                            logic_b = 32'(signed'(i_imm));
                             rd_data = logic_o;
                         end
                         ORI:begin
-                            logic_a = rs1_data;
-                            logic_b = 32'(signed'(i_imm));
                             rd_data = logic_o;
                         end
                         ANDI:begin
-                            logic_a = rs1_data;
-                            logic_b = 32'(signed'(i_imm));
                             rd_data = logic_o;
                         end
                         SLLI:begin
@@ -227,13 +237,9 @@ module execution
                     case(funct3)
                         BEQ: begin
                             pc_v_x = eq_o;
-                            logic_a = rs1_data;
-                            logic_b = rs2_data;
                         end
                         BNE: begin
                             pc_v_x = !eq_o;
-                            logic_a = rs1_data;
-                            logic_b = rs2_data;
                         end
                         BLT: begin
                             alu_m = 1'b1;
