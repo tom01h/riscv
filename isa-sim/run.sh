@@ -6,9 +6,9 @@ for t in "${@}"; do
     hexdump ../isa/$t -s  4096 -n 4096 -v -e '1/4 "%08X\n"' > inst.hex
     hexdump ../isa/$t -s 12288 -n 4096 -v -e '1/4 "%08X\n"' > data.hex
 
-    spike -l --log=log/$t.spike.log --isa=rv32i ../isa/$t
+    spike -l --log=log/$t.spike.log --isa=rv32im_zicsr_zifencei ../isa/$t
 
-    reset=`grep "add\s.*test_[0-9]*>" ../isa/$t.dump | sed "s/.*# //; s#\s.*##"`
+    reset=`grep "addi\s.*test_[0-9]*>" ../isa/$t.dump | sed "s/.*# //; s#\s.*##"`
     #reset=`grep "<test_2>:" ../isa/$t.dump | sed "s#\ .*##"`
     pass=`grep "<pass>:" ../isa/$t.dump | sed "s#\ .*##"`
     fail=`grep "<fail>:" ../isa/$t.dump | sed "s#\ .*##"`

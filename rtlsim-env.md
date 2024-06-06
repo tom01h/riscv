@@ -43,7 +43,7 @@ make
 Spikeを流すなら
 ```
 isa-sim/にて
-spike -l --log=log_file --isa=rv32i ../isa/rv32ui-p-addi
+spike -l --log=log_file --isa=rv32im_zicsr_zifencei ../isa/rv32ui-p-addi
 ```
 
 ### ↑をまとめて実行する

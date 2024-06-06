@@ -17,14 +17,14 @@ sudo apt install device-tree-compiler
 
 ## GCC
 ```
-./configure --prefix=/opt/riscv32 --with-arch=rv32i --with-abi=ilp32
+./configure --prefix=/opt/riscv32 --with-arch=rv32im_zicsr --with-abi=ilp32
 make
 ```
 
 ## 命令セットシミュレータ
 ### spike
 ```
-git submodule update spike
+git submodule update --init spike
 cd spike
 mkdir build
 cd build
@@ -35,13 +35,14 @@ make install
 
 ### pk
 ```
-git submodule update pk
+git submodule update --init pk
 cd pk
-../configure  --prefix=$RISCV --with-arch=rv32g --host=riscv32-unknown-elf
+mkdir build
+cd build
+../configure  --prefix=$RISCV --with-arch=rv32im_zicsr_zifencei --host=riscv32-unknown-elf
 make
 make install
 ```
-
 
 ## test
 ### hello.c
@@ -55,17 +56,16 @@ main(){
 
 ```
 riscv32-unknown-elf-gcc -o hello hello.c
-spike --isa=rv32i /opt/riscv32/riscv32-unknown-elf/bin/pk hello
+spike --isa=rv32im_zicsr_zifencei /opt/riscv32/riscv32-unknown-elf/bin/pk hello
 bbl loader
 Hello
-
-(riscv32-unknown-elf-objdump -d hello)
-(spike -l --log=log_file --isa=rv32i /opt/riscv32/riscv32-unknown-elf/bin/pk hello)
 ```
 
 ### riscv-tests
 ```
 git clone https://github.com/riscv-software-src/riscv-tests
+cd riscv-tests
+git submodule update --init --recursive
 ./configure --prefix=$RISCV/target --with-xlen=32
 make isa
 make install
@@ -88,7 +88,7 @@ diff Makefile Makefile.new
 ```
 なので、PCが80000688に到達するとpass  
 ```
-spike -l --log=log_file --isa=rv32i rv32ui-p-add
+spike -l --log=log_file --isa=rv32im_zicsr_zifencei rv32ui-p-add
 ```
 log_fileをみると
 ```
