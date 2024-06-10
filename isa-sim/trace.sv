@@ -45,54 +45,87 @@ module trace
         reg_d.itoa(rd);
         case(opcode)
             OP:begin
-                case(funct3)
-                    ADD_SUB:begin
-                        case(funct7)
-                            ADD_7:begin
-                                asm={"add     x", reg_d, ", x", reg_s1, ", x", reg_s2};
-                            end
-                            SUB_7:begin
-                                asm={"sub     x", reg_d, ", x", reg_s1, ", x", reg_s2};
-                            end    
-                            default:begin
-                                asm="Unimplemented";
-                            end
-                        endcase
-                    end
-                    SLT:begin
-                        asm={"slt     x", reg_d, ", x", reg_s1, ", x", reg_s2};
-                    end
-                    SLTU:begin
-                        asm={"sltu    x", reg_d, ", x", reg_s1, ", x", reg_s2};
-                    end
-                    XOR:begin
-                        asm={"xor     x", reg_d, ", x", reg_s1, ", x", reg_s2};
-                    end
-                    OR:begin
-                        asm={"or      x", reg_d, ", x", reg_s1, ", x", reg_s2};
-                    end
-                    AND:begin
-                        asm={"and     x", reg_d, ", x", reg_s1, ", x", reg_s2};
-                    end
-                    SLL:begin
-                        asm={"sll     x", reg_d, ", x", reg_s1, ", x", reg_s2};
-                    end
-                    SRL_SRA:begin
-                        case(funct7)
-                            SRL_7:begin
-                                asm={"srl     x", reg_d, ", x", reg_s1, ", x", reg_s2};
-                            end
-                            SRA_7:begin
-                                asm={"sra     x", reg_d, ", x", reg_s1, ", x", reg_s2};
-                            end
-                            default:begin
-                                asm="Unimplemented";
-                            end
-                        endcase                        
-                    end    
-                    default:begin
-                        asm="Unimplemented";
-                    end
+                case(funct7)
+                        MULDIV_7:
+                            case(funct3)
+                                MUL:begin
+                                    asm={"mul     x", reg_d, ", x", reg_s1, ", x", reg_s2};
+                                end
+                                MULH:begin
+                                    asm={"mulh    x", reg_d, ", x", reg_s1, ", x", reg_s2};
+                                end
+                                MULHSU:begin
+                                    asm={"mulhsu  x", reg_d, ", x", reg_s1, ", x", reg_s2};
+                                end
+                                MULHU:begin
+                                    asm={"mulhu   x", reg_d, ", x", reg_s1, ", x", reg_s2};
+                                end
+                                DIV:begin
+                                    asm={"div     x", reg_d, ", x", reg_s1, ", x", reg_s2};
+                                end
+                                DIVU:begin
+                                    asm={"divu    x", reg_d, ", x", reg_s1, ", x", reg_s2};
+                                end
+                                REM:begin
+                                    asm={"rem     x", reg_d, ", x", reg_s1, ", x", reg_s2};
+                                end
+                                REMU:begin
+                                    asm={"remu    x", reg_d, ", x", reg_s1, ", x", reg_s2};
+                                end
+                                default:begin
+                                    asm="Unimplemented";
+                                end
+                            endcase
+                        default:
+                            case(funct3)
+                                ADD_SUB:begin
+                                    case(funct7)
+                                        ADD_7:begin
+                                            asm={"add     x", reg_d, ", x", reg_s1, ", x", reg_s2};
+                                        end
+                                        SUB_7:begin
+                                            asm={"sub     x", reg_d, ", x", reg_s1, ", x", reg_s2};
+                                        end    
+                                        default:begin
+                                            asm="Unimplemented";
+                                        end
+                                    endcase
+                                end
+                                SLT:begin
+                                    asm={"slt     x", reg_d, ", x", reg_s1, ", x", reg_s2};
+                                end
+                                SLTU:begin
+                                    asm={"sltu    x", reg_d, ", x", reg_s1, ", x", reg_s2};
+                                end
+                                XOR:begin
+                                    asm={"xor     x", reg_d, ", x", reg_s1, ", x", reg_s2};
+                                end
+                                OR:begin
+                                    asm={"or      x", reg_d, ", x", reg_s1, ", x", reg_s2};
+                                end
+                                AND:begin
+                                    asm={"and     x", reg_d, ", x", reg_s1, ", x", reg_s2};
+                                end
+                                SLL:begin
+                                    asm={"sll     x", reg_d, ", x", reg_s1, ", x", reg_s2};
+                                end
+                                SRL_SRA:begin
+                                    case(funct7)
+                                        SRL_7:begin
+                                            asm={"srl     x", reg_d, ", x", reg_s1, ", x", reg_s2};
+                                        end
+                                        SRA_7:begin
+                                            asm={"sra     x", reg_d, ", x", reg_s1, ", x", reg_s2};
+                                        end
+                                        default:begin
+                                            asm="Unimplemented";
+                                        end
+                                    endcase                        
+                                end    
+                                default:begin
+                                    asm="Unimplemented";
+                                end
+                            endcase
                 endcase
             end
             OPIMM:begin

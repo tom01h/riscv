@@ -19,10 +19,10 @@ parameter MUL    = 3'b000;
 parameter MULH   = 3'b001;
 parameter MULHSU = 3'b010;
 parameter MULHU  = 3'b011;
-//parameter DIV    = 3'b100;
-//parameter DIVU   = 3'b101;
-//parameter REM    = 3'b110;
-//parameter REMY   = 3'b111;
+parameter DIV    = 3'b100;
+parameter DIVU   = 3'b101;
+parameter REM    = 3'b110;
+parameter REMU   = 3'b111;
 parameter MULDIV_7 = 7'b0000001;
 
 parameter OPIMM = 5'b00_100;
