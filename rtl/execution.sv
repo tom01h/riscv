@@ -7,7 +7,9 @@ module execution
     input logic reset,
     input logic [31:0] pc_i,
     input logic inst_v_i,
+    input logic stall_i,
     input logic hazard_x,
+    input logic div_last,
     input logic [31:0] inst_i,
     output logic pc_v_x,
     output logic [31:0] pc_x,
@@ -18,8 +20,11 @@ module execution
     output logic rs2_v,
     output logic rdx_v,
     output logic rdm_v,
+    output logic div_inst,
     output logic [3:0] minst,
     output logic signed [31:0] rd_data,
+    output logic signed [33:0] alu_l,
+    input logic signed [31:0] Qo,
     input logic signed [31:0] rs1_data,
     input logic signed [31:0] rs2_data
 );
@@ -40,8 +45,8 @@ module execution
         end
     end
 
-    assign rs1 = (hazard_x) ? inst_x[19:15] : inst_i[19:15];
-    assign rs2 = (hazard_x) ? inst_x[24:20] : inst_i[24:20];
+    assign rs1 = (stall_i) ? inst_x[19:15] : inst_i[19:15];
+    assign rs2 = (stall_i) ? inst_x[24:20] : inst_i[24:20];
     assign rd = inst_x[11:7];
     wire  rd_v_x = (rd != 0);
 
@@ -59,7 +64,6 @@ module execution
     logic signed [32:0] alu_b;
     logic alu_m;
     logic signed [31:0] alu_o;
-    logic signed [33:0] alu_l;
     
     assign alu_l = (alu_m) ? (alu_a  - alu_b) : (alu_a + alu_b);
     assign alu_o = alu_l[31:0];
@@ -109,6 +113,8 @@ module execution
     end
     assign mul_o = mul_a * mul_b;
 
+    wire iv = inst_v_x & !hazard_x;
+
     always_comb begin
         alu_a = 33'hx;
         alu_b = 33'hx;
@@ -118,210 +124,226 @@ module execution
         rs2_v = 1'b0;
         rdx_v = 1'b0;
         rdm_v = 1'b0;
+        div_inst = 1'b0;
         minst = 4'b11xx;
         rd_data = 32'hx;
         pc_v_x = 1'b0;
         pc_x = 32'hx;
-        if(inst_v_x & !hazard_x) begin
-            case(opcode)
-                OP:begin
-                    alu_a = rs1_data;
-                    alu_b = rs2_data;
-                    rs1_v = 1'b1;
-                    rs2_v = 1'b1;
-                    rdx_v = rd_v_x;
-                    rdm_v = rd_v_x;
-                    case(funct7)
-                        MULDIV_7:
-                            case(funct3)
-                                MUL:    rd_data = mul_o[31:0];
-                                MULH:   rd_data = mul_o[63:32];
-                                MULHSU: rd_data = mul_o[63:32];
-                                MULHU:  rd_data = mul_o[63:32];
-                                default: ;
-                            endcase
-                        default:
-                            case(funct3)
-                                ADD_SUB:begin
-                                    case(funct7)
-                                        ADD_7: alu_m = 1'b0;
-                                        SUB_7: alu_m = 1'b1;
-                                        default: ;
-                                    endcase
-                                    rd_data = alu_o;
-                                end
-                                SLT:begin
-                                    alu_m = 1'b1;
-                                    rd_data = {31'h0, lt_o};
-                                end
-                                SLTU:begin
-                                    alu_m = 1'b1;
-                                    alu_a[32] = 1'b0; // unsigned
-                                    alu_b[32] = 1'b0; // unsigned
-                                    rd_data = {31'h0, lt_o};
-                                end
-                                XOR:begin
-                                    rd_data = logic_o;
-                                end
-                                OR:begin
-                                    rd_data = logic_o;
-                                end
-                                AND:begin
-                                    rd_data = logic_o;
-                                end
-                                SLL:begin
-                                    rd_data = shift_l;
-                                end
-                                SRL_SRA:begin
-                                    case(funct7)
-                                        SRL_7: sha = 1'b0;
-                                        SRA_7: sha = 1'b1;
-                                        default: ;
-                                    endcase
-                                    rd_data = shift_r;
-                                end
-                                default: ;
-                            endcase
-                    endcase
-                end
-                OPIMM:begin
-                    alu_a = rs1_data;
-                    rs1_v = 1'b1;
-                    alu_b = 32'(signed'(i_imm));
-                    rdx_v = rd_v_x;
-                    rdm_v = rd_v_x;
-                    case(funct3)
-                        ADDI:begin
-                            alu_m = 1'b0;
-                            rd_data = alu_o;
-                        end
-                        SLTI:begin
-                            alu_m = 1'b1;
-                            rd_data = {31'h0, lt_o};
-                        end
-                        SLTIU:begin
-                            alu_m = 1'b1;
-                            alu_a[32] = 1'b0; // unsigned
-                            alu_b[32] = 1'b0; // unsigned
-                            rd_data = {31'h0, lt_o};
-                        end
-                        XORI:begin
-                            rd_data = logic_o;
-                        end
-                        ORI:begin
-                            rd_data = logic_o;
-                        end
-                        ANDI:begin
-                            rd_data = logic_o;
-                        end
-                        SLLI:begin
-                            rd_data = shift_l;
-                        end    
-                        SRLI_SRAI:begin
-                            case(funct7)
-                                SRLI_7: sha = 1'b0;
-                                SRAI_7: sha = 1'b1;
-                                default: ;
-                            endcase
-                            rd_data = shift_r;
-                        end
-                        default: ;
-                    endcase
-                end
-                BRANCH:begin
-                    alu_a = rs1_data;
-                    alu_b = rs2_data;
-                    rs1_v = 1'b1;
-                    rs2_v = 1'b1;
-                    pc_x = br_pc;
-                    case(funct3)
-                        BEQ: begin
-                            pc_v_x = eq_o;
-                        end
-                        BNE: begin
-                            pc_v_x = !eq_o;
-                        end
-                        BLT: begin
-                            alu_m = 1'b1;
-                            pc_v_x = lt_o;
-                        end
-                        BGE: begin
-                            alu_m = 1'b1;
-                            pc_v_x = !lt_o;
-                        end
-                        BLTU: begin
-                            alu_m = 1'b1;
-                            pc_v_x = lt_o;
-                            alu_a[32] = 1'b0; // unsigned
-                            alu_b[32] = 1'b0; // unsigned
-                        end
-                        BGEU: begin
-                            alu_m = 1'b1;
-                            pc_v_x = !lt_o;
-                            alu_a[32] = 1'b0; // unsigned
-                            alu_b[32] = 1'b0; // unsigned
-                        end
-                        default: ;
-                    endcase
-                end
-                AUIPC:begin
-                    alu_a = pc_d;
-                    alu_b = u_imm;
-                    alu_m = 1'b0;
-                    rdx_v = rd_v_x;
-                    rdm_v = rd_v_x;
-                    rd_data = alu_o;
-                end
-                LUI:begin
-                    alu_a = 0;
-                    alu_b = u_imm;
-                    alu_m = 1'b0;
-                    rdx_v = rd_v_x;
-                    rdm_v = rd_v_x;
-                    rd_data = alu_o;
-                end
-                JALR:begin
-                    alu_a = rs1_data;
-                    rs1_v = 1'b1;
-                    alu_b = i_imm;
-                    alu_m = 1'b0;
-                    rdx_v = rd_v_x;
-                    rdm_v = rd_v_x;
-                    rd_data = br_pc;
-                    pc_x = alu_o;
-                    pc_v_x = 1'b1;
-                end
-                JAL:begin
-                    alu_a = pc_d;
-                    alu_b = j_imm;
-                    alu_m = 1'b0;
-                    rdx_v = rd_v_x;
-                    rdm_v = rd_v_x;
-                    rd_data = br_pc;
-                    pc_x = alu_o;
-                    pc_v_x = 1'b1;
-                end
-                LOAD:begin
-                    alu_a = rs1_data;
-                    rs1_v = 1'b1;
-                    alu_b = i_imm;
-                    alu_m = 1'b0;
-                    rdx_v = 1'b0;
-                    rdm_v = rd_v_x;
-                    rd_data = alu_o;
-                    minst = {1'b0, funct3};
-                end
-                STORE:begin
-                    alu_a = rs1_data;
-                    rs1_v = 1'b1;
-                    alu_b = s_imm;
-                    alu_m = 1'b0;
-                    rd_data = alu_o;
-                    minst = {1'b1, funct3};
-                end
-                default: ;
-            endcase
-        end
+        case(opcode)
+            OP:begin
+                alu_a = rs1_data;
+                alu_b = rs2_data;
+                rs1_v = 1'b1;
+                rs2_v = 1'b1;
+                rdx_v = rd_v_x & (iv|div_last);
+                rdm_v = rd_v_x & (iv|div_last);
+                case(funct7)
+                    MULDIV_7:
+                        case(funct3)
+                            MUL:    rd_data = mul_o[31:0];
+                            MULH:   rd_data = mul_o[63:32];
+                            MULHSU: rd_data = mul_o[63:32];
+                            MULHU:  rd_data = mul_o[63:32];
+                            DIV:    div_inst = iv;
+                            DIVU: begin
+                                div_inst = iv;
+                                alu_m = 1'b1;
+                                alu_a[32] = 1'b0; // unsigned
+                                alu_b[32] = 1'b0; // unsigned
+                                rd_data = Qo;
+                            end
+                            REM:    div_inst = iv;
+                            REMU: begin
+                                div_inst = iv;
+                                alu_m = 1'b1;
+                                alu_a[32] = 1'b0; // unsigned
+                                alu_b[32] = 1'b0; // unsigned
+                                if(alu_l[33]) rd_data = rs1_data;
+                                else          rd_data = alu_o;
+                            end
+                            default: ;
+                        endcase
+                    default:
+                        case(funct3)
+                            ADD_SUB:begin
+                                case(funct7)
+                                    ADD_7: alu_m = 1'b0;
+                                    SUB_7: alu_m = 1'b1;
+                                    default: ;
+                                endcase
+                                rd_data = alu_o;
+                            end
+                            SLT:begin
+                                alu_m = 1'b1;
+                                rd_data = {31'h0, lt_o};
+                            end
+                            SLTU:begin
+                                alu_m = 1'b1;
+                                alu_a[32] = 1'b0; // unsigned
+                                alu_b[32] = 1'b0; // unsigned
+                                rd_data = {31'h0, lt_o};
+                            end
+                            XOR:begin
+                                rd_data = logic_o;
+                            end
+                            OR:begin
+                                rd_data = logic_o;
+                            end
+                            AND:begin
+                                rd_data = logic_o;
+                            end
+                            SLL:begin
+                                rd_data = shift_l;
+                            end
+                            SRL_SRA:begin
+                                case(funct7)
+                                    SRL_7: sha = 1'b0;
+                                    SRA_7: sha = 1'b1;
+                                    default: ;
+                                endcase
+                                rd_data = shift_r;
+                            end
+                            default: ;
+                        endcase
+                endcase
+            end
+            OPIMM:begin
+                alu_a = rs1_data;
+                rs1_v = 1'b1;
+                alu_b = 32'(signed'(i_imm));
+                rdx_v = rd_v_x & iv;
+                rdm_v = rd_v_x & iv;
+                case(funct3)
+                    ADDI:begin
+                        alu_m = 1'b0;
+                        rd_data = alu_o;
+                    end
+                    SLTI:begin
+                        alu_m = 1'b1;
+                        rd_data = {31'h0, lt_o};
+                    end
+                    SLTIU:begin
+                        alu_m = 1'b1;
+                        alu_a[32] = 1'b0; // unsigned
+                        alu_b[32] = 1'b0; // unsigned
+                        rd_data = {31'h0, lt_o};
+                    end
+                    XORI:begin
+                        rd_data = logic_o;
+                    end
+                    ORI:begin
+                        rd_data = logic_o;
+                    end
+                    ANDI:begin
+                        rd_data = logic_o;
+                    end
+                    SLLI:begin
+                        rd_data = shift_l;
+                    end    
+                    SRLI_SRAI:begin
+                        case(funct7)
+                            SRLI_7: sha = 1'b0;
+                            SRAI_7: sha = 1'b1;
+                            default: ;
+                        endcase
+                        rd_data = shift_r;
+                    end
+                    default: ;
+                endcase
+            end
+            BRANCH:begin
+                alu_a = rs1_data;
+                alu_b = rs2_data;
+                rs1_v = 1'b1;
+                rs2_v = 1'b1;
+                pc_x = br_pc;
+                case(funct3)
+                    BEQ: begin
+                        pc_v_x = eq_o & iv;
+                    end
+                    BNE: begin
+                        pc_v_x = !eq_o & iv;
+                    end
+                    BLT: begin
+                        alu_m = 1'b1;
+                        pc_v_x = lt_o & iv;
+                    end
+                    BGE: begin
+                        alu_m = 1'b1;
+                        pc_v_x = !lt_o & iv;
+                    end
+                    BLTU: begin
+                        alu_m = 1'b1;
+                        pc_v_x = lt_o & iv;
+                        alu_a[32] = 1'b0; // unsigned
+                        alu_b[32] = 1'b0; // unsigned
+                    end
+                    BGEU: begin
+                        alu_m = 1'b1;
+                        pc_v_x = !lt_o & iv;
+                        alu_a[32] = 1'b0; // unsigned
+                        alu_b[32] = 1'b0; // unsigned
+                    end
+                    default: ;
+                endcase
+            end
+            AUIPC:begin
+                alu_a = pc_d;
+                alu_b = u_imm;
+                alu_m = 1'b0;
+                rdx_v = rd_v_x & iv;
+                rdm_v = rd_v_x & iv;
+                rd_data = alu_o;
+            end
+            LUI:begin
+                alu_a = 0;
+                alu_b = u_imm;
+                alu_m = 1'b0;
+                rdx_v = rd_v_x & iv;
+                rdm_v = rd_v_x & iv;
+                rd_data = alu_o;
+            end
+            JALR:begin
+                alu_a = rs1_data;
+                rs1_v = 1'b1;
+                alu_b = i_imm;
+                alu_m = 1'b0;
+                rdx_v = rd_v_x & iv;
+                rdm_v = rd_v_x & iv;
+                rd_data = br_pc;
+                pc_x = alu_o;
+                pc_v_x = iv;
+            end
+            JAL:begin
+                alu_a = pc_d;
+                alu_b = j_imm;
+                alu_m = 1'b0;
+                rdx_v = rd_v_x & iv;
+                rdm_v = rd_v_x & iv;
+                rd_data = br_pc;
+                pc_x = alu_o;
+                pc_v_x = iv;
+            end
+            LOAD:begin
+                alu_a = rs1_data;
+                rs1_v = 1'b1;
+                alu_b = i_imm;
+                alu_m = 1'b0;
+                rdx_v = 1'b0;
+                rdm_v = rd_v_x & iv;
+                rd_data = alu_o;
+                if (iv) minst = {1'b0, funct3};
+            end
+            STORE:begin
+                alu_a = rs1_data;
+                rs1_v = 1'b1;
+                alu_b = s_imm;
+                alu_m = 1'b0;
+                rd_data = alu_o;
+                if (iv) minst = {1'b1, funct3};
+            end
+            default: ;
+        endcase
     end
     
 endmodule

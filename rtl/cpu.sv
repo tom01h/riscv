@@ -49,8 +49,12 @@ module cpu
     logic rs2_v;
     logic rdx_v;
     logic rdm_v;
+    logic div_inst;
+    logic div_last;
     logic [3:0] minst;
     logic signed [31:0] rd_data_x;
+    logic signed [33:0] alu_l;
+    logic signed [31:0] Qo;
     logic signed [31:0] rs1_data;
     logic signed [31:0] rs2_data;
 
@@ -60,7 +64,9 @@ module cpu
         .reset    (reset_p),
         .pc_i     (pc_i),
         .inst_v_i (inst_v_i),
-        .hazard_x  (hazard_x),
+        .stall_i  (stall_i),
+        .hazard_x (hazard_x),
+        .div_last (div_last),
         .inst_i   (inst_i),
         .pc_v_x   (pc_v_x),
         .pc_x     (pc_x),
@@ -71,8 +77,11 @@ module cpu
         .rs2_v    (rs2_v),
         .rdx_v    (rdx_v),
         .rdm_v    (rdm_v),
+        .div_inst (div_inst),
         .minst    (minst),
         .rd_data  (rd_data_x),
+        .alu_l    (alu_l),
+        .Qo       (Qo),
         .rs1_data (rs1_data),
         .rs2_data (rs2_data)
     );
@@ -82,17 +91,22 @@ module cpu
     ireg ireg
     (
         .clk       (clk),
+        .reset     (reset_p),
         .rs1       (rs1),
         .rs2       (rs2),
         .rd        (rd),
-        .rs1_v    (rs1_v),
-        .rs2_v    (rs2_v),
+        .rs1_v     (rs1_v),
+        .rs2_v     (rs2_v),
         .rdx_v     (rdx_v),
         .rdm_v     (rdm_v),
+        .div_inst  (div_inst),
         .stall_i   (stall_i),
         .hazard_x  (hazard_x),
+        .div_last  (div_last),
         .rd_data_x (rd_data_x),
         .rd_data_m (rd_data_m),
+        .alu_l     (alu_l),
+        .Qo        (Qo),
         .rs1_data  (rs1_data),
         .rs2_data  (rs2_data)
     );
