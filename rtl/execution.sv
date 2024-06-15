@@ -20,10 +20,12 @@ module execution
     output logic rs2_v,
     output logic rdx_v,
     output logic rdm_v,
-    output logic div_inst,
+    output logic [1:0] div_inst,
     output logic [3:0] minst,
     output logic signed [31:0] rd_data,
     output logic signed [33:0] alu_l,
+    output logic eq_o,
+    input logic RSIGN,
     input logic signed [31:0] Qo,
     input logic signed [31:0] rs1_data,
     input logic signed [31:0] rs2_data
@@ -77,7 +79,6 @@ module execution
     assign shift_l = rs1_data << shamt;
     assign shift_r = (sha) ? (rs1_data >>> shamt) : (rs1_data >> shamt);
 
-    logic eq_o;
     logic lt_o;
     logic signed [31:0] logic_o;
 
@@ -90,7 +91,7 @@ module execution
         endcase
     end
 
-    assign eq_o = (alu_a[31:0] == alu_b[31:0]);
+    assign eq_o = (rs1_data[31:0] == rs2_data[31:0]);
     assign lt_o = alu_l[33];
 
     logic signed [31:0] br_pc;
@@ -124,7 +125,7 @@ module execution
         rs2_v = 1'b0;
         rdx_v = 1'b0;
         rdm_v = 1'b0;
-        div_inst = 1'b0;
+        div_inst = 2'b00;
         minst = 4'b11xx;
         rd_data = 32'hx;
         pc_v_x = 1'b0;
@@ -144,17 +145,26 @@ module execution
                             MULH:   rd_data = mul_o[63:32];
                             MULHSU: rd_data = mul_o[63:32];
                             MULHU:  rd_data = mul_o[63:32];
-                            DIV:    div_inst = iv;
+                            DIV: begin
+                                div_inst = {1'b0, iv};
+                                alu_m = 1'b1;
+                                rd_data = Qo;
+                            end
                             DIVU: begin
-                                div_inst = iv;
+                                div_inst = {iv, 1'b0};
                                 alu_m = 1'b1;
                                 alu_a[32] = 1'b0; // unsigned
                                 alu_b[32] = 1'b0; // unsigned
                                 rd_data = Qo;
                             end
-                            REM:    div_inst = iv;
+                            REM: begin
+                                div_inst = {1'b0, iv};
+                                alu_m = 1'b1;
+                                if((alu_l[33]&~RSIGN)|(~alu_l[33]&~eq_o&RSIGN)) rd_data = rs1_data;  // 最後のサイクルしか使わないので &(REM[31:0]==0) は不要
+                                else                                            rd_data = alu_o;
+                            end
                             REMU: begin
-                                div_inst = iv;
+                                div_inst = {iv, 1'b0};
                                 alu_m = 1'b1;
                                 alu_a[32] = 1'b0; // unsigned
                                 alu_b[32] = 1'b0; // unsigned

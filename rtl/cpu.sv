@@ -49,11 +49,13 @@ module cpu
     logic rs2_v;
     logic rdx_v;
     logic rdm_v;
-    logic div_inst;
+    logic [1:0] div_inst;
     logic div_last;
     logic [3:0] minst;
     logic signed [31:0] rd_data_x;
     logic signed [33:0] alu_l;
+    logic eq_o;
+    logic RSIGN;
     logic signed [31:0] Qo;
     logic signed [31:0] rs1_data;
     logic signed [31:0] rs2_data;
@@ -81,6 +83,8 @@ module cpu
         .minst    (minst),
         .rd_data  (rd_data_x),
         .alu_l    (alu_l),
+        .eq_o     (eq_o),
+        .RSIGN    (RSIGN),
         .Qo       (Qo),
         .rs1_data (rs1_data),
         .rs2_data (rs2_data)
@@ -106,6 +110,8 @@ module cpu
         .rd_data_x (rd_data_x),
         .rd_data_m (rd_data_m),
         .alu_l     (alu_l),
+        .eq_o      (eq_o),
+        .RSIGN     (RSIGN),
         .Qo        (Qo),
         .rs1_data  (rs1_data),
         .rs2_data  (rs2_data)
