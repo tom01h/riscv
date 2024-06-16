@@ -50,16 +50,17 @@ module cpu
     logic rs2_v;
     logic rdx_v;
     logic rdm_v;
-    logic [2:0] div_inst;
-    logic div_wb;
     logic [3:0] minst;
     logic signed [31:0] rd_data_x;
-    logic signed [33:0] alu_l;
-    logic eq_o;
-    logic RSIGN;
-    logic signed [31:0] Qo;
     logic signed [31:0] rs1_data;
     logic signed [31:0] rs2_data;
+
+    logic [2:0] div_inst;
+    logic signed [33:0] alu_l;
+    logic eq_o;
+    logic div_wb;
+    logic RSIGN;
+    logic signed [31:0] Qo;
 
     execution execution
     (
@@ -69,7 +70,6 @@ module cpu
         .inst_v_i (inst_v_i),
         .stall_i  (stall_i),
         .hazard_x (hazard_x),
-        .div_wb   (div_wb),
         .inst_i   (inst_i),
         .pc_v_x   (pc_v_x),
         .pc_x     (pc_x),
@@ -80,15 +80,17 @@ module cpu
         .rs2_v    (rs2_v),
         .rdx_v    (rdx_v),
         .rdm_v    (rdm_v),
-        .div_inst (div_inst),
         .minst    (minst),
         .rd_data  (rd_data_x),
+        .rs1_data (rs1_data),
+        .rs2_data (rs2_data),
+
+        .div_inst (div_inst),
         .alu_l    (alu_l),
         .eq_o     (eq_o),
+        .div_wb   (div_wb),
         .RSIGN    (RSIGN),
-        .Qo       (Qo),
-        .rs1_data (rs1_data),
-        .rs2_data (rs2_data)
+        .Qo       (Qo)
     );
 
     logic signed [31:0] rd_data_m;
@@ -104,18 +106,19 @@ module cpu
         .rs2_v     (rs2_v),
         .rdx_v     (rdx_v),
         .rdm_v     (rdm_v),
-        .div_inst  (div_inst),
         .stall_i   (stall_i),
         .hazard_x  (hazard_x),
-        .div_wb    (div_wb),
         .rd_data_x (rd_data_x),
         .rd_data_m (rd_data_m),
+        .rs1_data  (rs1_data),
+        .rs2_data  (rs2_data),
+
+        .div_inst  (div_inst),
         .alu_l     (alu_l),
         .eq_o      (eq_o),
+        .div_wb    (div_wb),
         .RSIGN     (RSIGN),
-        .Qo        (Qo),
-        .rs1_data  (rs1_data),
-        .rs2_data  (rs2_data)
+        .Qo        (Qo)
     );
     
         

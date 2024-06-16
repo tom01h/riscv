@@ -12,18 +12,19 @@ module ireg
     input logic rs2_v,
     input logic rdx_v,
     input logic rdm_v,
-    input logic [2:0] div_inst, // [0] : signed / [1]: unsigned / [2] : signed div
     output logic stall_i,
     output logic hazard_x,
-    output logic div_wb,
     input logic signed [31:0] rd_data_x,
     input logic signed [31:0] rd_data_m,
+    output logic signed [31:0] rs1_data,
+    output logic signed [31:0] rs2_data,
+
+    input logic [2:0] div_inst, // [0] : signed / [1]: unsigned / [2] : signed div
     input logic signed [33:0] alu_l,
     input logic eq_o,
+    output logic div_wb,
     output logic RSIGN,
-    output logic signed [31:0] Qo,
-    output logic signed [31:0] rs1_data,
-    output logic signed [31:0] rs2_data
+    output logic signed [31:0] Qo
 );
 
     logic signed [31:0] register [0:31];

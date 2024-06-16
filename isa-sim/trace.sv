@@ -120,8 +120,8 @@ module trace
                                         default:begin
                                             asm="Unimplemented";
                                         end
-                                    endcase                        
-                                end    
+                                    endcase
+                                end
                                 default:begin
                                     asm="Unimplemented";
                                 end
@@ -174,8 +174,8 @@ module trace
                             default:begin
                                 asm="Unimplemented";
                             end
-                        endcase                        
-                    end    
+                        endcase
+                    end
                     default:begin
                         asm="Unimplemented";
                     end
@@ -250,7 +250,7 @@ module trace
             end
             default:begin
                 asm="Unimplemented";
-            end    
+            end
         endcase
         asm = {asm, space};
     end

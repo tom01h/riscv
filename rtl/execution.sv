@@ -10,7 +10,6 @@ module execution
     input logic inst_v_i,
     input logic stall_i,
     input logic hazard_x,
-    input logic div_wb,
     input logic [31:0] inst_i,
     output logic pc_v_x,
     output logic [31:0] pc_x,
@@ -21,15 +20,17 @@ module execution
     output logic rs2_v,
     output logic rdx_v,
     output logic rdm_v,
-    output logic [2:0] div_inst,
     output logic [3:0] minst,
     output logic signed [31:0] rd_data,
+    input logic signed [31:0] rs1_data,
+    input logic signed [31:0] rs2_data,
+    
+    output logic [2:0] div_inst,
     output logic signed [33:0] alu_l,
     output logic eq_o,
+    input logic div_wb,
     input logic RSIGN,
-    input logic signed [31:0] Qo,
-    input logic signed [31:0] rs1_data,
-    input logic signed [31:0] rs2_data
+    input logic signed [31:0] Qo
 );
 
     logic signed [31:0] pc_d;
