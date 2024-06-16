@@ -54,7 +54,10 @@ module ireg
     logic div_run;
     logic signed [63:0] REM;
     logic signed [33:0] Q;
-    //if (TEMP >= 0 and not RSIGN) or ((TEMP < 0  or REM == divisor) and RSIGN):
+    //sdiv.pyのこの部分
+    //alu_l = REM - divisor
+    //if (alu_l >= 0 and not RSIGN) or ((alu_l < 0  or REM == divisor) and RSIGN):
+    //部分剰余が0を超えないことを検出しているが負または0検出には差(alu_l)の符号と一致検出器(とALL0検出)を使っている
     wire Qi = (~alu_l[33]&~RSIGN) | ((alu_l[33] | (eq_o&(REM[31:0]==0)))&RSIGN);
     wire [33:0] Qt = ((Qi) ? {Q[32:0],1'b1} : {Q[32:0],1'b0}) * ((QSIGN&div_last)?-1:1); //TEMP//TEMP//
     assign Qo = Qt[31:0];
