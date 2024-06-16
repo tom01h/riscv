@@ -21,7 +21,7 @@ for i in range(Len):
         Q   += 1
         REM = alu_l
 
-    #print(i, REM>>32, B>>32, Q, hex(REM if REM>=0 else (1<<64)+REM))
+    #print(i, REM>>Len, B>>Len, Q, hex(REM if REM>=0 else (1<<(Len*2))+REM))
 
 B   >>= Len
 REM >>= Len

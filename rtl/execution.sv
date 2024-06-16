@@ -9,7 +9,7 @@ module execution
     input logic inst_v_i,
     input logic stall_i,
     input logic hazard_x,
-    input logic div_last,
+    input logic div_wb,
     input logic [31:0] inst_i,
     output logic pc_v_x,
     output logic [31:0] pc_x,
@@ -20,7 +20,7 @@ module execution
     output logic rs2_v,
     output logic rdx_v,
     output logic rdm_v,
-    output logic [1:0] div_inst,
+    output logic [2:0] div_inst,
     output logic [3:0] minst,
     output logic signed [31:0] rd_data,
     output logic signed [33:0] alu_l,
@@ -125,7 +125,7 @@ module execution
         rs2_v = 1'b0;
         rdx_v = 1'b0;
         rdm_v = 1'b0;
-        div_inst = 2'b00;
+        div_inst = 3'b000;
         minst = 4'b11xx;
         rd_data = 32'hx;
         pc_v_x = 1'b0;
@@ -136,8 +136,8 @@ module execution
                 alu_b = rs2_data;
                 rs1_v = 1'b1;
                 rs2_v = 1'b1;
-                rdx_v = rd_v_x & (iv|div_last);
-                rdm_v = rd_v_x & (iv|div_last);
+                rdx_v = rd_v_x & iv;
+                rdm_v = rd_v_x & iv;
                 case(funct7)
                     MULDIV_7:
                         case(funct3)
@@ -146,30 +146,38 @@ module execution
                             MULHSU: rd_data = mul_o[63:32];
                             MULHU:  rd_data = mul_o[63:32];
                             DIV: begin
-                                div_inst = {1'b0, iv};
+                                div_inst = {iv, 1'b0, iv};
                                 alu_m = 1'b1;
                                 rd_data = Qo;
+                                rdx_v = rd_v_x & div_wb;
+                                rdm_v = rd_v_x & div_wb;
                             end
                             DIVU: begin
-                                div_inst = {iv, 1'b0};
+                                div_inst = {1'b0, iv, 1'b0};
                                 alu_m = 1'b1;
                                 alu_a[32] = 1'b0; // unsigned
                                 alu_b[32] = 1'b0; // unsigned
                                 rd_data = Qo;
+                                rdx_v = rd_v_x & div_wb;
+                                rdm_v = rd_v_x & div_wb;
                             end
                             REM: begin
-                                div_inst = {1'b0, iv};
+                                div_inst = {2'b00, iv};
                                 alu_m = 1'b1;
                                 if((alu_l[33]&~RSIGN)|(~alu_l[33]&~eq_o&RSIGN)) rd_data = rs1_data;  // 最後のサイクルしか使わないので &(REM[31:0]==0) は不要
                                 else                                            rd_data = alu_o;
+                                rdx_v = rd_v_x & div_wb;
+                                rdm_v = rd_v_x & div_wb;
                             end
                             REMU: begin
-                                div_inst = {iv, 1'b0};
+                                div_inst = {1'b0, iv, 1'b0};
                                 alu_m = 1'b1;
                                 alu_a[32] = 1'b0; // unsigned
                                 alu_b[32] = 1'b0; // unsigned
                                 if(alu_l[33]) rd_data = rs1_data;
                                 else          rd_data = alu_o;
+                                rdx_v = rd_v_x & div_wb;
+                                rdm_v = rd_v_x & div_wb;
                             end
                             default: ;
                         endcase

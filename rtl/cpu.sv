@@ -49,8 +49,8 @@ module cpu
     logic rs2_v;
     logic rdx_v;
     logic rdm_v;
-    logic [1:0] div_inst;
-    logic div_last;
+    logic [2:0] div_inst;
+    logic div_wb;
     logic [3:0] minst;
     logic signed [31:0] rd_data_x;
     logic signed [33:0] alu_l;
@@ -68,7 +68,7 @@ module cpu
         .inst_v_i (inst_v_i),
         .stall_i  (stall_i),
         .hazard_x (hazard_x),
-        .div_last (div_last),
+        .div_wb   (div_wb),
         .inst_i   (inst_i),
         .pc_v_x   (pc_v_x),
         .pc_x     (pc_x),
@@ -106,7 +106,7 @@ module cpu
         .div_inst  (div_inst),
         .stall_i   (stall_i),
         .hazard_x  (hazard_x),
-        .div_last  (div_last),
+        .div_wb    (div_wb),
         .rd_data_x (rd_data_x),
         .rd_data_m (rd_data_m),
         .alu_l     (alu_l),
