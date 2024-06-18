@@ -18,13 +18,14 @@ module top
         .gpio_data (gpio_data)
     );
 
-    wire inst_v_i = cpu.inst_v_i           & !cpu.stall_i;
-    wire inst_v_x = cpu.execution.inst_v_x & !cpu.hazard_x;
+    wire inst_v_i = !cpu.stall_i  & cpu.inst_v_i;
+    wire inst_v_x = !cpu.hazard_x & cpu.execution.inst_v_x | cpu.div_wb;
+    
     reg  inst_v_m;
     reg  inst_v_r;
 
     always @ (negedge clk) begin
-        inst_v_m <= inst_v_x;
+        inst_v_m <= inst_v_x & !(|cpu.div_inst);
         inst_v_r <= inst_v_m;
     end    
 
@@ -36,7 +37,7 @@ module top
     always @ (negedge clk) begin
         if(!reset)begin
             if (inst_v_i) ci <= ci + 1;
-            if (inst_v_x) cx <= cx + 1;
+            if (inst_v_x & !(|cpu.div_inst)) cx <= cx + 1;
             if (inst_v_m) cm <= cm + 1;
             if (inst_v_r) cr <= cr + 1;
         end
@@ -54,7 +55,7 @@ module top
         .pcv      (cpu.execution.pc_v_x),
         .pc_x     (cpu.pc_x),
         .inst_v_i (inst_v_i),
-        .inst_v_x (inst_v_x),
+        .inst_v_x (inst_v_x | cpu.ireg.div_run),
         .inst_v_m (inst_v_m),
         .inst_v_r (inst_v_r),
         .ci       (ci),
